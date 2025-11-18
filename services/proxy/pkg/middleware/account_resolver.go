@@ -1,11 +1,13 @@
 package middleware
 
 import (
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"net/http"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/jellydator/ttlcache/v3"
 	"github.com/opencloud-eu/opencloud/services/proxy/pkg/router"
 	"github.com/opencloud-eu/opencloud/services/proxy/pkg/user/backend"
@@ -122,6 +124,14 @@ func (m accountResolver) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 			m.logger.Error().Err(err).Msg("could not read user id claim")
 			w.WriteHeader(http.StatusInternalServerError)
 			return
+		}
+
+		// keycloak automatically base64 encodes binary uuids like objectGUID, try to decode it
+		if decoded, decodeErr := base64.URLEncoding.DecodeString(value); decodeErr == nil {
+			if parsed, parseErr := uuid.FromBytes(decoded); parseErr == nil {
+				m.logger.Debug().Str("claim", m.userOIDCClaim).Str("value", value).Str("parsed", parsed.String()).Msg("Detected base64 encoded binary uuid")
+				value = parsed.String()
+			}
 		}
 
 		user, token, err = m.userProvider.GetUserByClaims(req.Context(), m.userCS3Claim, value)
