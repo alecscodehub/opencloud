@@ -21,10 +21,10 @@ import (
 )
 
 func TestTokenIsAddedWithMailClaim(t *testing.T) {
-	sut := newMockAccountResolver(&userv1beta1.User{
+	sut := newMockAccountResolver(t, &userv1beta1.User{
 		Id:   &userv1beta1.UserId{Idp: "https://idx.example.com", OpaqueId: "123"},
 		Mail: "foo@example.com",
-	}, nil, oidc.Email, "mail", false)
+	}, nil, oidc.Email, "mail", false, "foo@example.com")
 
 	req, rw := mockRequest(map[string]interface{}{
 		oidc.Iss:   "https://idx.example.com",
@@ -39,10 +39,10 @@ func TestTokenIsAddedWithMailClaim(t *testing.T) {
 }
 
 func TestTokenIsAddedWithUsernameClaim(t *testing.T) {
-	sut := newMockAccountResolver(&userv1beta1.User{
+	sut := newMockAccountResolver(t, &userv1beta1.User{
 		Id:   &userv1beta1.UserId{Idp: "https://idx.example.com", OpaqueId: "123"},
 		Mail: "foo@example.com",
-	}, nil, oidc.PreferredUsername, "username", false)
+	}, nil, oidc.PreferredUsername, "username", false, "foo")
 
 	req, rw := mockRequest(map[string]interface{}{
 		oidc.Iss:               "https://idx.example.com",
@@ -58,10 +58,10 @@ func TestTokenIsAddedWithUsernameClaim(t *testing.T) {
 }
 
 func TestTokenIsAddedWithDotUsernamePathClaim(t *testing.T) {
-	sut := newMockAccountResolver(&userv1beta1.User{
+	sut := newMockAccountResolver(t, &userv1beta1.User{
 		Id:   &userv1beta1.UserId{Idp: "https://idx.example.com", OpaqueId: "123"},
 		Mail: "foo@example.com",
-	}, nil, "li.un", "username", false)
+	}, nil, "li.un", "username", false, "foo")
 
 	// This is how lico adds the username to the access token
 	req, rw := mockRequest(map[string]interface{}{
@@ -80,10 +80,10 @@ func TestTokenIsAddedWithDotUsernamePathClaim(t *testing.T) {
 }
 
 func TestTokenIsAddedWithDotEscapedUsernameClaim(t *testing.T) {
-	sut := newMockAccountResolver(&userv1beta1.User{
+	sut := newMockAccountResolver(t, &userv1beta1.User{
 		Id:   &userv1beta1.UserId{Idp: "https://idx.example.com", OpaqueId: "123"},
 		Mail: "foo@example.com",
-	}, nil, "li\\.un", "username", false)
+	}, nil, "li\\.un", "username", false, "foo")
 
 	// This tests the . escaping of the readUserIDClaim
 	req, rw := mockRequest(map[string]interface{}{
@@ -100,10 +100,10 @@ func TestTokenIsAddedWithDotEscapedUsernameClaim(t *testing.T) {
 }
 
 func TestTokenIsAddedWithDottedUsernameClaimFallback(t *testing.T) {
-	sut := newMockAccountResolver(&userv1beta1.User{
+	sut := newMockAccountResolver(t, &userv1beta1.User{
 		Id:   &userv1beta1.UserId{Idp: "https://idx.example.com", OpaqueId: "123"},
 		Mail: "foo@example.com",
-	}, nil, "li.un", "username", false)
+	}, nil, "li.un", "username", false, "foo")
 
 	// This tests the . escaping fallback of the readUserIDClaim
 	req, rw := mockRequest(map[string]interface{}{
@@ -120,7 +120,7 @@ func TestTokenIsAddedWithDottedUsernameClaimFallback(t *testing.T) {
 }
 
 func TestNSkipOnNoClaims(t *testing.T) {
-	sut := newMockAccountResolver(nil, backend.ErrAccountDisabled, oidc.Email, "mail", false)
+	sut := newMockAccountResolver(t, nil, backend.ErrAccountDisabled, oidc.Email, "mail", false, "")
 	req, rw := mockRequest(nil)
 
 	sut.ServeHTTP(rw, req)
@@ -131,7 +131,7 @@ func TestNSkipOnNoClaims(t *testing.T) {
 }
 
 func TestUnauthorizedOnUserNotFound(t *testing.T) {
-	sut := newMockAccountResolver(nil, backend.ErrAccountNotFound, oidc.PreferredUsername, "username", false)
+	sut := newMockAccountResolver(t, nil, backend.ErrAccountNotFound, oidc.PreferredUsername, "username", false, "foo")
 	req, rw := mockRequest(map[string]interface{}{
 		oidc.Iss:               "https://idx.example.com",
 		oidc.PreferredUsername: "foo",
@@ -145,7 +145,7 @@ func TestUnauthorizedOnUserNotFound(t *testing.T) {
 }
 
 func TestUnauthorizedOnUserDisabled(t *testing.T) {
-	sut := newMockAccountResolver(nil, backend.ErrAccountDisabled, oidc.PreferredUsername, "username", false)
+	sut := newMockAccountResolver(t, nil, backend.ErrAccountDisabled, oidc.PreferredUsername, "username", false, "foo")
 	req, rw := mockRequest(map[string]interface{}{
 		oidc.Iss:               "https://idx.example.com",
 		oidc.PreferredUsername: "foo",
@@ -159,7 +159,7 @@ func TestUnauthorizedOnUserDisabled(t *testing.T) {
 }
 
 func TestInternalServerErrorOnMissingMailAndUsername(t *testing.T) {
-	sut := newMockAccountResolver(nil, backend.ErrAccountNotFound, oidc.Email, "mail", false)
+	sut := newMockAccountResolver(t, nil, backend.ErrAccountNotFound, oidc.Email, "mail", false, "")
 	req, rw := mockRequest(map[string]interface{}{
 		oidc.Iss: "https://idx.example.com",
 	})
@@ -173,11 +173,11 @@ func TestInternalServerErrorOnMissingMailAndUsername(t *testing.T) {
 
 func TestUnauthorizedOnMissingTenantId(t *testing.T) {
 	sut := newMockAccountResolver(
-		&userv1beta1.User{
+		t, &userv1beta1.User{
 			Id:       &userv1beta1.UserId{Idp: "https://idx.example.com", OpaqueId: "123"},
 			Username: "foo",
 		},
-		nil, oidc.PreferredUsername, "username", true)
+		nil, oidc.PreferredUsername, "username", true, "foo")
 	req, rw := mockRequest(map[string]any{
 		oidc.Iss:               "https://idx.example.com",
 		oidc.PreferredUsername: "foo",
@@ -192,7 +192,7 @@ func TestUnauthorizedOnMissingTenantId(t *testing.T) {
 
 func TestTokenIsAddedWhenUserHasTenantId(t *testing.T) {
 	sut := newMockAccountResolver(
-		&userv1beta1.User{
+		t, &userv1beta1.User{
 			Id: &userv1beta1.UserId{
 				Idp:      "https://idx.example.com",
 				OpaqueId: "123",
@@ -200,7 +200,7 @@ func TestTokenIsAddedWhenUserHasTenantId(t *testing.T) {
 			},
 			Username: "foo",
 		},
-		nil, oidc.PreferredUsername, "username", true)
+		nil, oidc.PreferredUsername, "username", true, "foo")
 	req, rw := mockRequest(map[string]any{
 		oidc.Iss:               "https://idx.example.com",
 		oidc.PreferredUsername: "foo",
@@ -213,7 +213,46 @@ func TestTokenIsAddedWhenUserHasTenantId(t *testing.T) {
 	assert.Contains(t, token, "eyJ")
 }
 
-func newMockAccountResolver(userBackendResult *userv1beta1.User, userBackendErr error, oidcclaim, cs3claim string, multiTenant bool) http.Handler {
+func TestTokenIsAddedWithBinaryBase64UserIDClaim(t *testing.T) {
+	sut := newMockAccountResolver(t, &userv1beta1.User{
+		Id:   &userv1beta1.UserId{Idp: "https://idx.example.com", OpaqueId: "b4963c7c-72b3-44b4-af98-eee1429dd8c2"},
+		Mail: "foo@example.com",
+	}, nil, "uuid", "username", false, "b4963c7c-72b3-44b4-af98-eee1429dd8c2")
+
+	// This tests the base64 decoding of binary user id claims
+	req, rw := mockRequest(map[string]interface{}{
+		oidc.Iss: "https://idx.example.com",
+		"uuid":   "tJY8fHKzRLSvmO7hQp3Ywg==", // base64 encoded bytes value of b4963c7c-72b3-44b4-af98-eee1429dd8c2
+	})
+
+	sut.ServeHTTP(rw, req)
+
+	token := req.Header.Get(revactx.TokenHeader)
+	assert.NotEmpty(t, token)
+
+	assert.Contains(t, token, "eyJ")
+}
+func TestTokenIsAddedWithInvalidBinaryBase64UserIDClaim(t *testing.T) {
+	sut := newMockAccountResolver(t, &userv1beta1.User{
+		Id:   &userv1beta1.UserId{Idp: "https://idx.example.com", OpaqueId: "b4963c7c-72b3-44b4-af98-eee1429dd8c2"},
+		Mail: "foo@example.com",
+	}, nil, "uuid", "username", false, "aGVsbG8gd29ybGQ=")
+
+	// This tests the base64 decoding of binary user id claims
+	req, rw := mockRequest(map[string]interface{}{
+		oidc.Iss: "https://idx.example.com",
+		"uuid":   "aGVsbG8gd29ybGQ=", // base64 encoded bytes value of invalid uuid
+	})
+
+	sut.ServeHTTP(rw, req)
+
+	token := req.Header.Get(revactx.TokenHeader)
+	assert.NotEmpty(t, token)
+
+	assert.Contains(t, token, "eyJ")
+}
+
+func newMockAccountResolver(t *testing.T, userBackendResult *userv1beta1.User, userBackendErr error, oidcclaim, cs3claim string, multiTenant bool, expectedClaim string) http.Handler {
 	tokenManager, _ := jwt.New(map[string]interface{}{
 		"secret":  "change-me",
 		"expires": int64(60),
@@ -226,7 +265,13 @@ func newMockAccountResolver(userBackendResult *userv1beta1.User, userBackendErr 
 	}
 
 	ub := mocks.UserBackend{}
-	ub.On("GetUserByClaims", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(userBackendResult, token, userBackendErr)
+	ub.On("GetUserByClaims", mock.Anything, mock.Anything,
+		mock.MatchedBy(
+			func(claim string) bool {
+				assert.Equal(t, expectedClaim, claim)
+				return true
+			})).
+		Return(userBackendResult, token, userBackendErr)
 	ub.On("GetUserRoles", mock.Anything, mock.Anything).Return(userBackendResult, nil)
 
 	ra := userRoleMocks.UserRoleAssigner{}
