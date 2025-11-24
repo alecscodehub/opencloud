@@ -608,8 +608,8 @@ def testPipelines(ctx):
         pipelines += apiTests(ctx)
 
     enable_watch_fs = [False]
-    if ctx.build.event == "cron" or "full-ci" in ctx.build.title.lower():
-        enable_watch_fs.append(True)
+    if ctx.build.event == "cron" in ctx.build.title.lower():
+    enable_watch_fs.append(True)
 
     for run_with_watch_fs_enabled in enable_watch_fs:
         pipelines += e2eTestPipeline(ctx, run_with_watch_fs_enabled) + multiServiceE2ePipeline(ctx, run_with_watch_fs_enabled)
@@ -994,7 +994,7 @@ def localApiTestPipeline(ctx):
 
     with_remote_php = [True]
     enable_watch_fs = [False]
-    if ctx.build.event == "cron" or "full-ci" in ctx.build.title.lower():
+    if ctx.build.event == "cron" in ctx.build.title.lower():
         with_remote_php.append(False)
         enable_watch_fs.append(True)
 
@@ -1310,7 +1310,7 @@ def apiTests(ctx):
 
     with_remote_php = [True]
     enable_watch_fs = [False]
-    if ctx.build.event == "cron" or "full-ci" in ctx.build.title.lower():
+    if ctx.build.event == "cron" in ctx.build.title.lower():
         with_remote_php.append(False)
         enable_watch_fs.append(True)
 
