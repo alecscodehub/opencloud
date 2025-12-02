@@ -357,6 +357,34 @@ func FrontendConfigFromStruct(cfg *config.Config, logger log.Logger) (map[string
 					"include_ocm_sharees":   cfg.OCS.IncludeOCMSharees,
 					"show_email_in_results": cfg.OCS.ShowUserEmailInResults,
 				},
+				"ocdav": map[string]interface{}{
+					"prefix":           cfg.OCDav.Prefix,
+					"files_namespace":  cfg.OCDav.FilesNamespace,
+					"webdav_namespace": cfg.OCDav.WebdavNamespace,
+					"shares_namespace": cfg.OCDav.SharesNamespace,
+					"ocm_namespace":    cfg.OCDav.OCMNamespace,
+					"gatewaysvc":       cfg.Reva.Address,
+					"timeout":          cfg.OCDav.Timeout,
+					"insecure":         cfg.OCDav.Insecure,
+					"enable_http_tpc":  cfg.OCDav.EnableHTTPTPC,
+					"public_url":       cfg.OCDav.PublicURL,
+					// still not supported
+					//"favorite_storage_driver":   unused,
+					//"favorite_storage_drivers":  unused,
+					"version":              cfg.OCDav.Status.Version,
+					"version_string":       cfg.OCDav.Status.VersionString,
+					"edition":              cfg.OCDav.Status.Edition,
+					"product":              cfg.OCDav.Status.Product,
+					"product_name":         cfg.OCDav.Status.ProductName,
+					"product_version":      cfg.OCDav.Status.ProductVersion,
+					"allow_depth_infinity": cfg.OCDav.AllowPropfindDepthInfinity,
+					"validation":           map[string]interface{}{
+						// "invalid_chars": aka ItemNameInvalidChars option ... unused
+						// "max_length": aka ItemNameMaxLength option ... unused
+					},
+					"url_signing_shared_secret": cfg.Commons.URLSigningSecret,
+					"machine_auth_apikey":       cfg.MachineAuthAPIKey,
+				},
 			},
 		},
 	}, nil
