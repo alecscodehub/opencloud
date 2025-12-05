@@ -1947,6 +1947,7 @@ def readyReleaseGo():
                 "image": READY_RELEASE_GO,
                 "settings": {
                     "git_email": "devops@opencloud.eu",
+                    "release_branch": "stable-4.0",
                     "forge_type": "github",
                     "forge_token": {
                         "from_secret": "github_token",
