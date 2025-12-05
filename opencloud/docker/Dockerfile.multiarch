@@ -11,7 +11,7 @@ RUN --mount=type=bind,target=/build,rw \
     --mount=type=cache,target=/go/pkg/mod \
     --mount=type=cache,target=/root/.cache \
     GOOS="${TARGETOS:-linux}" GOARCH="${TARGETARCH:-amd64}" ; \
-    make -C opencloud/opencloud release-linux-docker-${TARGETARCH} ENABLE_VIPS=true DIST=/dist
+    make -C opencloud release-linux-docker-${TARGETARCH} ENABLE_VIPS=true DIST=/dist
 
 FROM alpine:3.22
 ARG VERSION

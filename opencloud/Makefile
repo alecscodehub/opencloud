@@ -17,7 +17,7 @@ include ../.make/docs.mk
 
 .PHONY: dev-docker
 dev-docker:
-	docker build -f docker/Dockerfile.multiarch -t opencloudeu/opencloud:dev ../..
+	docker build -f docker/Dockerfile.multiarch -t opencloudeu/opencloud:dev ..
 
 .PHONY: dev-docker-multiarch
 dev-docker-multiarch:
