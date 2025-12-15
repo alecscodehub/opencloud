@@ -1,5 +1,21 @@
 # Changelog
 
+## [4.0.1](https://github.com/opencloud-eu/opencloud/releases/tag/v4.0.1) - 2025-12-15
+
+### ❤️ Thanks to all contributors! ❤️
+
+@ScharfViktor, @fschade, @kulmann, @micbar, @prashant-gurung899
+
+### ✅ Tests
+
+- [stable-4.0] Port #2011 [[#2018](https://github.com/opencloud-eu/opencloud/pull/2018)]
+
+### 🐛 Bug Fixes
+
+- [stable-4.0] fix: build time edition channels #2001 [[#2010](https://github.com/opencloud-eu/opencloud/pull/2010)]
+- [stable-4.0] fix: enforce trailing slash for server url [[#2002](https://github.com/opencloud-eu/opencloud/pull/2002)]
+- [stable-4.0] fix: enhance resource creation with detailed process information (#1978) [[#2000](https://github.com/opencloud-eu/opencloud/pull/2000)]
+
 ## [4.0.0](https://github.com/opencloud-eu/opencloud/releases/tag/v4.0.0) - 2025-12-01
 
 ### ❤️ Thanks to all contributors! ❤️
