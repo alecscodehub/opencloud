@@ -80,6 +80,7 @@ func OCMConfigFromStruct(cfg *config.Config, logger log.Logger) map[string]inter
 					"events": map[string]interface{}{
 						"natsaddress":          cfg.Events.Endpoint,
 						"natsclusterid":        cfg.Events.Cluster,
+						"enabletls":            cfg.Events.EnableTLS,
 						"tlsinsecure":          cfg.Events.TLSInsecure,
 						"tlsrootcacertificate": cfg.Events.TLSRootCACertificate,
 						"authusername":         cfg.Events.AuthUsername,
