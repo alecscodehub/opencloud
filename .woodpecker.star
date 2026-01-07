@@ -452,7 +452,16 @@ CI_HTTP_PROXY_ENV = {
     },
 }
 
+def prefixStepCommands(pipeline, commands = [], skip_steps = []):
+    default_skip_steps = ["evaluate-previous-run"]
+    skip_steps = default_skip_steps + skip_steps
+    for step in pipeline["steps"]:
+        if "commands" in step.keys() and step["name"] not in skip_steps:
+            step["commands"] = commands + step["commands"]
+
 def pipelineDependsOn(pipeline, dependant_pipelines):
+    if type(pipeline) == "list":
+        pipeline = pipeline[0]
     if "depends_on" in pipeline.keys():
         pipeline["depends_on"] = pipeline["depends_on"] + getPipelineNames(dependant_pipelines)
     else:
@@ -495,7 +504,7 @@ def main(ctx):
 
     is_release_pr = (ctx.build.event == "pull_request" and ctx.build.sender == "openclouders" and "🎉 release" in ctx.build.title.lower())
     if is_release_pr:
-        return [licenseCheck(ctx)]
+        return licenseCheck(ctx)
 
     build_release_helpers = \
         readyReleaseGo()
@@ -511,10 +520,10 @@ def main(ctx):
         codestyle(ctx) + \
         checkGherkinLint(ctx) + \
         checkTestSuitesInExpectedFailures(ctx) + \
-        buildWebCache(ctx) + \
-        cacheBrowsers(ctx) + \
+        pipelinesDependsOn(buildWebCache(ctx), savePipelineNumber(ctx)) + \
+        pipelinesDependsOn(cacheBrowsers(ctx), savePipelineNumber(ctx)) + \
         getGoBinForTesting(ctx) + \
-        buildOpencloudBinaryForTesting(ctx) + \
+        pipelinesDependsOn(buildOpencloudBinaryForTesting(ctx), savePipelineNumber(ctx)) + \
         checkStarlark(ctx) + \
         build_release_helpers + \
         testOpencloudAndUploadResults(ctx) + \
@@ -559,14 +568,56 @@ def main(ctx):
         ),
     )
 
+    test_pipelines.append(
+        pipelineDependsOn(
+            purgePipelineInfoCache(),
+            testPipelines(ctx),
+        ),
+    )
+
     pipelines = test_pipelines + build_release_pipelines + notifyMatrix(ctx)
 
     pipelineSanityChecks(pipelines)
-    return pipelines
+    return savePipelineNumber(ctx) + pipelines
+
+def savePipelineNumber(ctx):
+    base_url = "https://raw.githubusercontent.com/%s" % repo_slug
+    script_link = "%s/%s/tests/config/woodpecker/upload_pipeline_info.sh" % (base_url, ctx.build.commit)
+    return [{
+        "name": "save-pipeline-info",
+        "skip_clone": True,
+        "steps": [{
+            "name": "upload-info",
+            "image": MINIO_MC,
+            "environment": MINIO_MC_ENV,
+            "commands": [
+                "curl -s -o upload_pipeline_info.sh %s" % script_link,
+                "bash -x upload_pipeline_info.sh",
+            ],
+        }],
+        "when": [
+            {
+                "event": ["push", "manual"],
+                "branch": ["main", "stable-*"],
+            },
+            event["tag"],
+            event["cron"],
+            event["pull_request"],
+        ],
+    }]
+
+def evaluateWorkflowStep():
+    return [{
+        "name": "evaluate-previous-run",
+        "image": OC_CI_NODEJS % DEFAULT_NODEJS_VERSION,
+        "commands": [
+            "node tests/config/woodpecker/evaluate_pipeline.js",
+        ],
+    }]
 
 def cachePipeline(ctx, name, steps):
     return {
-        "name": "build-%s-cache" % name,
+        "name": "cache-%s" % name,
         "skip_clone": True,
         "steps": steps,
         "when": [
@@ -591,7 +642,7 @@ def buildWebCache(ctx):
     ]
 
 def testOpencloudAndUploadResults(ctx):
-    pipeline = testOpencloud(ctx)
+    unit_pipeline = testOpencloud(ctx)
 
     ######################################################################
     # The triggers have been disabled for now, since the govulncheck can #
@@ -601,8 +652,8 @@ def testOpencloudAndUploadResults(ctx):
     ######################################################################
 
     #security_scan = scanOpencloud(ctx)
-    #return [security_scan, pipeline, scan_result_upload]
-    return [pipeline]
+    #return [security_scan] + unit_pipeline + [scan_result_upload]
+    return unit_pipeline
 
 def testPipelines(ctx):
     pipelines = []
@@ -615,10 +666,10 @@ def testPipelines(ctx):
         storage = "decomposed"
 
     if "skip" not in config["cs3ApiTests"] or not config["cs3ApiTests"]["skip"]:
-        pipelines.append(cs3ApiTests(ctx, storage, "default"))
+        pipelines += cs3ApiTests(ctx, storage, "default")
     if "skip" not in config["wopiValidatorTests"] or not config["wopiValidatorTests"]["skip"]:
-        pipelines.append(wopiValidatorTests(ctx, storage, "builtin", "default"))
-        pipelines.append(wopiValidatorTests(ctx, storage, "cs3", "default"))
+        pipelines += wopiValidatorTests(ctx, storage, "builtin", "default")
+        pipelines += wopiValidatorTests(ctx, storage, "cs3", "default")
 
     pipelines += localApiTestPipeline(ctx)
     pipelines += coreApiTestPipeline(ctx)
@@ -626,7 +677,7 @@ def testPipelines(ctx):
     pipelines += multiServiceE2ePipeline(ctx)
 
     if ("skip" not in config["k6LoadTests"] or not config["k6LoadTests"]["skip"]) and ("k6-test" in ctx.build.title.lower() or ctx.build.event == "cron"):
-        pipelines += k6LoadTests(ctx)
+        pipelines += pipelineDependsOn(k6LoadTests(ctx), savePipelineNumber(ctx))
 
     return pipelines
 
@@ -722,7 +773,7 @@ def restoreGoBinCache():
     ]
 
 def testOpencloud(ctx):
-    steps = restoreGoBinCache() + makeGoGenerate("") + [
+    steps = evaluateWorkflowStep() + restoreGoBinCache() + makeGoGenerate("") + [
         {
             "name": "golangci-lint",
             "image": OC_CI_GOLANG,
@@ -788,8 +839,8 @@ def testOpencloud(ctx):
         },
     ]
 
-    return {
-        "name": "linting_and_unitTests",
+    pipeline = {
+        "name": "test-lint-unit",
         "steps": steps,
         "when": [
             event["base"],
@@ -804,6 +855,12 @@ def testOpencloud(ctx):
         "depends_on": getPipelineNames(getGoBinForTesting(ctx)),
         "workspace": workspace,
     }
+
+    prefixStepCommands(pipeline, [
+        ". ./.woodpecker.env",
+        '[ "$SKIP_WORKFLOW" = "true" ] && exit 0',
+    ])
+    return [pipeline]
 
 def scanOpencloud(ctx):
     steps = restoreGoBinCache() + makeGoGenerate("") + [
@@ -836,7 +893,7 @@ def scanOpencloud(ctx):
 
 def buildOpencloudBinaryForTesting(ctx):
     return [{
-        "name": "build_opencloud_binary_for_testing",
+        "name": "build-opencloud-for-testing",
         "steps": makeNodeGenerate("") +
                  makeGoGenerate("") +
                  build() +
@@ -1001,9 +1058,10 @@ def codestyle(ctx):
     return pipelines
 
 def cs3ApiTests(ctx, storage, accounts_hash_difficulty = 4):
-    return {
-        "name": "cs3ApiTests-%s" % storage,
-        "steps": restoreBuildArtifactCache(ctx, dirs["opencloudBinArtifact"], dirs["opencloudBinPath"]) +
+    pipeline = {
+        "name": "test-cs3-API-%s" % storage,
+        "steps": evaluateWorkflowStep() +
+                 restoreBuildArtifactCache(ctx, dirs["opencloudBinArtifact"], dirs["opencloudBinPath"]) +
                  opencloudServer(storage, accounts_hash_difficulty, deploy_type = "cs3api_validator") +
                  [
                      {
@@ -1029,6 +1087,11 @@ def cs3ApiTests(ctx, storage, accounts_hash_difficulty = 4):
             },
         ],
     }
+    prefixStepCommands(pipeline, [
+        ". ./.woodpecker.env",
+        '[ "$SKIP_WORKFLOW" = "true" ] && exit 0',
+    ])
+    return [pipeline]
 
 def wopiValidatorTests(ctx, storage, wopiServerType, accounts_hash_difficulty = 4):
     testgroups = [
@@ -1102,10 +1165,11 @@ def wopiValidatorTests(ctx, storage, wopiServerType, accounts_hash_difficulty = 
                 ],
             })
 
-    return {
-        "name": "wopiValidatorTests-%s-%s" % (wopiServerType, storage),
+    pipeline = {
+        "name": "test-wopi-validator-%s-%s" % (wopiServerType, storage),
         "services": fakeOffice(),
-        "steps": restoreBuildArtifactCache(ctx, dirs["opencloudBinArtifact"], dirs["opencloudBinPath"]) +
+        "steps": evaluateWorkflowStep() +
+                 restoreBuildArtifactCache(ctx, dirs["opencloudBinArtifact"], dirs["opencloudBinPath"]) +
                  waitForServices("fake-office", ["fakeoffice:8080"]) +
                  opencloudServer(storage, accounts_hash_difficulty, deploy_type = "wopi_validator", extra_server_environment = extra_server_environment) +
                  wopiServer +
@@ -1143,6 +1207,11 @@ def wopiValidatorTests(ctx, storage, wopiServerType, accounts_hash_difficulty = 
             },
         ],
     }
+    prefixStepCommands(pipeline, [
+        ". ./.woodpecker.env",
+        '[ "$SKIP_WORKFLOW" = "true" ] && exit 0',
+    ])
+    return [pipeline]
 
 def localApiTestPipeline(ctx):
     pipelines = []
@@ -1187,9 +1256,9 @@ def localApiTestPipeline(ctx):
                 for storage in params["storages"]:
                     for run_with_remote_php in params["withRemotePhp"]:
                         for run_with_watch_fs_enabled in params["enableWatchFs"]:
-                            pipeline_name = "API"
+                            pipeline_name = "test-API"
                             if name.startswith("cli"):
-                                pipeline_name = "CLI"
+                                pipeline_name = "test-CLI"
                             pipeline_name += "-%s" % name
                             if not run_with_remote_php:
                                 pipeline_name += "-withoutRemotePhp"
@@ -1199,7 +1268,7 @@ def localApiTestPipeline(ctx):
 
                             pipeline = {
                                 "name": pipeline_name,
-                                "steps": restoreBuildArtifactCache(ctx, dirs["opencloudBinArtifact"], dirs["opencloudBinPath"]) +
+                                "steps": evaluateWorkflowStep() + restoreBuildArtifactCache(ctx, dirs["opencloudBinArtifact"], dirs["opencloudBinPath"]) +
                                          (tikaService() if params["tikaNeeded"] else []) +
                                          (waitForServices("online-offices", ["collabora:9980", "onlyoffice:443", "fakeoffice:8080"]) if params["collaborationServiceNeeded"] else []) +
                                          (waitForClamavService() if params["antivirusNeeded"] else []) +
@@ -1234,6 +1303,10 @@ def localApiTestPipeline(ctx):
                                     },
                                 ],
                             }
+                            prefixStepCommands(pipeline, [
+                                ". ./.woodpecker.env",
+                                '[ "$SKIP_WORKFLOW" = "true" ] && exit 0',
+                            ])
                             pipelines.append(pipeline)
     return pipelines
 
@@ -1318,7 +1391,7 @@ def coreApiTestPipeline(ctx):
                 for run_with_remote_php in params["withRemotePhp"]:
                     for run_with_watch_fs_enabled in params["enableWatchFs"]:
                         if not debugPartsEnabled or (debugPartsEnabled and runPart in debugParts):
-                            pipeline_name = "Core-API-%s" % runPart
+                            pipeline_name = "test-Core-API-%s" % runPart
                             if not run_with_remote_php:
                                 pipeline_name += "-withoutRemotePhp"
                             pipeline_name += "-%s" % storage
@@ -1327,7 +1400,8 @@ def coreApiTestPipeline(ctx):
 
                             pipeline = {
                                 "name": pipeline_name,
-                                "steps": restoreBuildArtifactCache(ctx, dirs["opencloudBinArtifact"], dirs["opencloudBinPath"]) +
+                                "steps": evaluateWorkflowStep() +
+                                         restoreBuildArtifactCache(ctx, dirs["opencloudBinArtifact"], dirs["opencloudBinPath"]) +
                                          opencloudServer(
                                              storage,
                                              params["accounts_hash_difficulty"],
@@ -1354,11 +1428,15 @@ def coreApiTestPipeline(ctx):
                                     },
                                 ],
                             }
+                            prefixStepCommands(pipeline, [
+                                ". ./.woodpecker.env",
+                                '[ "$SKIP_WORKFLOW" = "true" ] && exit 0',
+                            ])
                             pipelines.append(pipeline)
     return pipelines
 
 def coreApiTest(part_number = 1, number_of_parts = 1, with_remote_php = False, storage = "posix"):
-    filterTags = "~@skipOnOpencloud-%s-Storage" % storage
+    filter_tags = "~@skipOnOpencloud-%s-Storage" % storage
     test_dir = "%s/tests/acceptance" % dirs["base"]
     expected_failures_file = "%s/expected-failures-API-on-%s-storage.md" % (test_dir, storage)
 
@@ -1370,7 +1448,7 @@ def coreApiTest(part_number = 1, number_of_parts = 1, with_remote_php = False, s
             "OC_REVA_DATA_ROOT": "%s" % (dirs["opencloudRevaDataRoot"] if storage == "owncloud" else ""),
             "SEND_SCENARIO_LINE_REFERENCES": True,
             "STORAGE_DRIVER": storage,
-            "BEHAT_FILTER_TAGS": filterTags,
+            "BEHAT_FILTER_TAGS": filter_tags,
             "DIVIDE_INTO_NUM_PARTS": number_of_parts,
             "RUN_PART": part_number,
             "ACCEPTANCE_TEST_TYPE": "core-api",
@@ -1458,6 +1536,7 @@ def e2eTestPipeline(ctx):
         for storage in params["storages"]:
             for watch_fs_enabled in params["enableWatchFs"]:
                 steps_before = \
+                    evaluateWorkflowStep() + \
                     restoreBuildArtifactCache(ctx, dirs["opencloudBinArtifact"], dirs["opencloudBin"]) + \
                     restoreWebCache() + \
                     restoreWebPnpmCache() + \
@@ -1499,20 +1578,30 @@ def e2eTestPipeline(ctx):
                             "cd %s/tests/e2e" % dirs["web"],
                             "bash run-e2e.sh %s --run-part %d" % (e2e_args, run_part),
                         ]
-                        pipelines.append({
-                            "name": "e2e-tests-%s-%s-%s%s" % (name, run_part, storage, "-watchfs" if watch_fs_enabled else ""),
+                        pipeline = {
+                            "name": "test-e2e-%s-%s-%s%s" % (name, run_part, storage, "-watchfs" if watch_fs_enabled else ""),
                             "steps": steps_before + [run_e2e] + steps_after,
                             "depends_on": getPipelineNames(buildOpencloudBinaryForTesting(ctx) + buildWebCache(ctx)),
                             "when": e2e_trigger,
-                        })
+                        }
+                        prefixStepCommands(pipeline, [
+                            ". ./.woodpecker.env",
+                            '[ "$SKIP_WORKFLOW" = "true" ] && exit 0',
+                        ])
+                        pipelines.append(pipeline)
                 else:
                     step_e2e["commands"].append("bash run-e2e.sh %s" % e2e_args)
-                    pipelines.append({
-                        "name": "e2e-tests-%s-%s%s" % (name, storage, "-watchfs" if watch_fs_enabled else ""),
+                    pipeline = {
+                        "name": "test-e2e-%s-%s%s" % (name, storage, "-watchfs" if watch_fs_enabled else ""),
                         "steps": steps_before + [step_e2e] + steps_after,
                         "depends_on": getPipelineNames(buildOpencloudBinaryForTesting(ctx) + buildWebCache(ctx)),
                         "when": e2e_trigger,
-                    })
+                    }
+                    prefixStepCommands(pipeline, [
+                        ". ./.woodpecker.env",
+                        '[ "$SKIP_WORKFLOW" = "true" ] && exit 0',
+                    ])
+                    pipelines.append(pipeline)
     return pipelines
 
 def multiServiceE2ePipeline(ctx):
@@ -1627,6 +1716,7 @@ def multiServiceE2ePipeline(ctx):
                     extra_server_environment["STORAGE_USERS_POSIX_WATCH_FS"] = True
 
                 steps = \
+                    evaluateWorkflowStep() + \
                     restoreBuildArtifactCache(ctx, dirs["opencloudBinArtifact"], dirs["opencloudBin"]) + \
                     restoreWebCache() + \
                     restoreWebPnpmCache() + \
@@ -1652,12 +1742,17 @@ def multiServiceE2ePipeline(ctx):
                     }] + \
                     uploadTracingResult(ctx)
 
-                pipelines.append({
+                pipeline = {
                     "name": "e2e-tests-multi-service%s" % ("-watchfs" if watch_fs_enabled else ""),
                     "steps": steps,
                     "depends_on": getPipelineNames(buildOpencloudBinaryForTesting(ctx) + buildWebCache(ctx)),
                     "when": e2e_trigger,
-                })
+                }
+                prefixStepCommands(pipeline, [
+                    ". ./.woodpecker.env",
+                    '[ "$SKIP_WORKFLOW" = "true" ] && exit 0',
+                ])
+                pipelines.append(pipeline)
     return pipelines
 
 def uploadTracingResult(ctx):
@@ -1949,7 +2044,7 @@ def binaryRelease(ctx, arch, depends_on = []):
     }
 
 def licenseCheck(ctx):
-    return {
+    return [{
         "name": "check-licenses",
         "steps": restoreGoBinCache() + [
             {
@@ -2013,7 +2108,7 @@ def licenseCheck(ctx):
             event["tag"],
         ],
         "workspace": workspace,
-    }
+    }]
 
 def readyReleaseGo():
     return [{
@@ -2276,9 +2371,9 @@ def opencloudServer(storage = "decomposed", accounts_hash_difficulty = 4, depend
             "%s/bin/ocwrapper serve --bin %s --url %s --admin-username admin --admin-password admin" % (dirs["ocWrapper"], dirs["opencloudBin"], environment["OC_URL"]),
         ]
     else:
-        server_commands += [
+        server_commands.append(
             "%s server" % dirs["opencloudBin"],
-        ]
+        )
 
     wait_for_opencloud = {
         "name": "wait-for-%s" % container_name,
@@ -2584,6 +2679,9 @@ def purgeOpencloudWebBuildCache(ctx):
 def purgeGoBinCache(ctx):
     return purgeCache("purge_go_bin_cache", "dev/opencloud/go-bin", 14)
 
+def purgePipelineInfoCache():
+    return purgeCache("purge_pipeline_info_cache", "public/opencloud/pipelines", 14)
+
 def pipelineSanityChecks(pipelines):
     """pipelineSanityChecks helps the CI developers to find errors before running it
 
@@ -2651,10 +2749,8 @@ def pipelineSanityChecks(pipelines):
         print(" %sx\t%s" % (images[image], image))
 
 def litmus(ctx, storage):
-    pipelines = []
-
     if not config["litmus"]:
-        return pipelines
+        return []
 
     environment = {
         "LITMUS_PASSWORD": "admin",
@@ -2662,11 +2758,12 @@ def litmus(ctx, storage):
         "TESTS": "basic copymove props http",
     }
 
-    litmusCommand = "/usr/local/bin/litmus-wrapper"
+    litmus_command = "/usr/local/bin/litmus-wrapper"
 
-    result = {
-        "name": "litmus",
-        "steps": restoreBuildArtifactCache(ctx, dirs["opencloudBinArtifact"], dirs["opencloudBinPath"]) +
+    pipeline = {
+        "name": "test-litmus",
+        "steps": evaluateWorkflowStep() +
+                 restoreBuildArtifactCache(ctx, dirs["opencloudBinArtifact"], dirs["opencloudBinPath"]) +
                  opencloudServer(storage) +
                  setupForLitmus() +
                  [
@@ -2677,7 +2774,7 @@ def litmus(ctx, storage):
                          "commands": [
                              "source .env",
                              'export LITMUS_URL="%s/remote.php/webdav"' % OC_URL,
-                             litmusCommand,
+                             litmus_command,
                          ],
                      },
                      {
@@ -2687,7 +2784,7 @@ def litmus(ctx, storage):
                          "commands": [
                              "source .env",
                              'export LITMUS_URL="%s/remote.php/dav/files/admin"' % OC_URL,
-                             litmusCommand,
+                             litmus_command,
                          ],
                      },
                      {
@@ -2697,7 +2794,7 @@ def litmus(ctx, storage):
                          "commands": [
                              "source .env",
                              'export LITMUS_URL="%s/remote.php/dav/files/admin/Shares/new_folder/"' % OC_URL,
-                             litmusCommand,
+                             litmus_command,
                          ],
                      },
                      {
@@ -2707,7 +2804,7 @@ def litmus(ctx, storage):
                          "commands": [
                              "source .env",
                              'export LITMUS_URL="%s/remote.php/webdav/Shares/new_folder/"' % OC_URL,
-                             litmusCommand,
+                             litmus_command,
                          ],
                      },
                      #  {
@@ -2721,7 +2818,7 @@ def litmus(ctx, storage):
                      #      "commands": [
                      #          "source .env",
                      #          "export LITMUS_URL='%s/remote.php/dav/public-files/'$PUBLIC_TOKEN" % OCIS_URL,
-                     #          litmusCommand,
+                     #          litmus_command,
                      #      ],
                      #  },
                      {
@@ -2731,7 +2828,7 @@ def litmus(ctx, storage):
                          "commands": [
                              "source .env",
                              "export LITMUS_URL='%s/remote.php/dav/spaces/'$SPACE_ID" % OC_URL,
-                             litmusCommand,
+                             litmus_command,
                          ],
                      },
                  ],
@@ -2748,9 +2845,12 @@ def litmus(ctx, storage):
             },
         ],
     }
-    pipelines.append(result)
 
-    return pipelines
+    prefixStepCommands(pipeline, [
+        ". ./.woodpecker.env",
+        '[ "$SKIP_WORKFLOW" = "true" ] && exit 0',
+    ])
+    return [pipeline]
 
 def setupForLitmus():
     return [{
@@ -3204,10 +3304,10 @@ def k6LoadTests(ctx):
     if "k6-test" in ctx.build.title.lower():
         event_array.append("pull_request")
 
-    return [{
-        "name": "k6-load-test",
+    pipeline = {
+        "name": "test-k6-load",
         "skip_clone": True,
-        "steps": [
+        "steps": evaluateWorkflowStep() + [
             {
                 "name": "k6-load-test",
                 "image": OC_CI_ALPINE,
@@ -3252,7 +3352,12 @@ def k6LoadTests(ctx):
                 "event": event_array,
             },
         ],
-    }]
+    }
+    prefixStepCommands(pipeline, [
+        ". ./.woodpecker.env",
+        '[ "$SKIP_WORKFLOW" = "true" ] && exit 0',
+    ])
+    return [pipeline]
 
 def waitForServices(name, services = []):
     services = ",".join(services)
