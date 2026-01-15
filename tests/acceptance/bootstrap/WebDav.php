@@ -1325,6 +1325,20 @@ trait WebDav {
 		if ($statusCode === 404 || $statusCode === 405) {
 			return;
 		}
+		// After MOVE the source path might still be visible for a short time
+		// We wait 1 second and retry once to avoid flaky failures.
+		if ($statusCode === 207) {
+			sleep(1);
+			$response = $this->listFolder(
+				$user,
+				$path,
+				'0',
+				null,
+				null,
+				$type
+			);
+			$statusCode = $response->getStatusCode();
+		}
 		if ($statusCode === 207) {
 			$responseXmlObject = HttpRequestHelper::getResponseXml(
 				$response,
