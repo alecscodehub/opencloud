@@ -434,7 +434,6 @@ MINIO_MC_ENV = {
         "from_secret": "cache_s3_secret_key",
     },
     "PUBLIC_BUCKET": "public",
-    "MC_PUBLIC_HOST": "https://s3.ci.opencloud.eu",
 }
 
 CI_HTTP_PROXY_ENV = {
@@ -1759,7 +1758,7 @@ def uploadTracingResult(ctx):
             "mc cp -a %s/reports/e2e/playwright/tracing/* s3/$PUBLIC_BUCKET/web/tracing/$CI_REPO_NAME/$CI_PIPELINE_NUMBER/" % dirs["web"],
             "cd %s/reports/e2e/playwright/tracing/" % dirs["web"],
             'echo "To see the trace, please open the following link in the console"',
-            'for f in *.zip; do echo "npx playwright show-trace $MC_PUBLIC_HOST/$PUBLIC_BUCKET/web/tracing/$CI_REPO_NAME/$CI_PIPELINE_NUMBER/$f \n"; done',
+            'for f in *.zip; do echo "npx playwright show-trace $CACHE_S3_SERVER/$PUBLIC_BUCKET/web/tracing/$CI_REPO_NAME/$CI_PIPELINE_NUMBER/$f \n"; done',
         ],
         "when": {
             "status": status,
