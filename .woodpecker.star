@@ -2610,6 +2610,9 @@ def checkStarlark(ctx):
                 "name": "format-check-starlark",
                 "image": OC_CI_BAZEL_BUILDIFIER,
                 "commands": [
+                    "echo $MC_HOST",
+                    "echo $CACHE_S3_SERVER",
+                    "echo 'https://s3.ci.opencloud.eu'",
                     "buildifier --mode=check .woodpecker.star",
                 ],
             },
