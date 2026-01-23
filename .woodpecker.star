@@ -1748,6 +1748,7 @@ def uploadTracingResult(ctx):
     status = ["failure"]
     if "with-tracing" in ctx.build.title.lower():
         status = ["failure", "success"]
+    S3_HOST = s3.ci.opencloud.eu
 
     return [{
         "name": "upload-tracing-result",
@@ -1758,7 +1759,7 @@ def uploadTracingResult(ctx):
             "mc cp -a %s/reports/e2e/playwright/tracing/* s3/$PUBLIC_BUCKET/web/tracing/$CI_REPO_NAME/$CI_PIPELINE_NUMBER/" % dirs["web"],
             "cd %s/reports/e2e/playwright/tracing/" % dirs["web"],
             'echo "To see the trace, please open the following link in the console"',
-            'for f in *.zip; do echo "npx playwright show-trace $CACHE_S3_SERVER/$PUBLIC_BUCKET/web/tracing/$CI_REPO_NAME/$CI_PIPELINE_NUMBER/$f \n"; done',
+            'for f in *.zip; do echo "npx playwright show-trace https://"$S3_HOST"/$PUBLIC_BUCKET/web/tracing/$CI_REPO_NAME/$CI_PIPELINE_NUMBER/$f \n"; done',
         ],
         "when": {
             "status": status,
@@ -2603,17 +2604,16 @@ def translation_sync(ctx):
     }]
 
 def checkStarlark(ctx):
+    S3_HOST = "s3.ci.opencloud.eu"
     return [{
         "name": "check-starlark",
         "steps": [
             {
                 "name": "format-check-starlark",
                 "image": OC_CI_BAZEL_BUILDIFIER,
-                "environment": {
-                    "MC_HOST": "https://s3.ci.opencloud.eu",
-                },
                 "commands": [
-                    "echo $MC_HOST",
+                    "echo https://S3_HOST",
+                    "echo https://%s/public" % S3_HOST,
                     "echo %s" % CACHE_S3_SERVER,
                     "echo 'https://s3.ci.opencloud.eu'",
                     "buildifier --mode=check .woodpecker.star",
