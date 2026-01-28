@@ -2269,6 +2269,10 @@ def genDocsPr(ctx):
                 "branch": "[main]",
                 "cron": "nightly *",
             },
+            {
+                "event": "pull_request",
+                "branch": "stablecitest-12.3.4",
+            },
         ],
     }]
 
