@@ -13,7 +13,8 @@ import (
 	"go-micro.dev/v4/store"
 	"golang.org/x/crypto/sha3"
 	"golang.org/x/oauth2"
-
+	"github.com/golang-jwt/jwt/v5"
+	
 	"github.com/opencloud-eu/opencloud/pkg/log"
 	"github.com/opencloud-eu/opencloud/pkg/oidc"
 	"github.com/opencloud-eu/opencloud/services/proxy/pkg/staticroutes"
