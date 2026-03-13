@@ -61,6 +61,8 @@ func New(ctx context.Context, stream raw.Stream, logger log.Logger, tp trace.Tra
 			events.TagsAdded{},
 			events.TagsRemoved{},
 			events.SpaceRenamed{},
+			events.FavoriteAdded{},
+			events.FavoriteRemoved{},
 		},
 		numConsumers: numConsumers,
 	}
@@ -198,6 +200,10 @@ func (s Service) processEvent(e raw.Event) error {
 		s.indexSpaceDebouncer.Debounce(getSpaceID(ev.FileRef), e.Ack)
 	case events.SpaceRenamed:
 		s.indexSpaceDebouncer.Debounce(ev.ID, e.Ack)
+	case events.FavoriteAdded:
+		s.index.UpsertItem(ev.Ref)
+	case events.FavoriteRemoved:
+		s.index.UpsertItem(ev.Ref)
 	}
 	return nil
 }

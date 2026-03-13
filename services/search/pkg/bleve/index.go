@@ -52,6 +52,7 @@ func NewMapping() (mapping.IndexMapping, error) {
 	docMapping := bleve.NewDocumentMapping()
 	docMapping.AddFieldMappingsAt("Name", nameMapping)
 	docMapping.AddFieldMappingsAt("Tags", lowercaseMapping)
+	docMapping.AddFieldMappingsAt("Favorites", lowercaseMapping)
 	docMapping.AddFieldMappingsAt("Content", fulltextFieldMapping)
 
 	indexMapping := bleve.NewIndexMapping()

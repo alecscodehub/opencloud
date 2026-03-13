@@ -23,6 +23,7 @@ var _fields = map[string]string{
 	"tags":      "Tags",
 	"content":   "Content",
 	"hidden":    "Hidden",
+	"favorite":  "Favorites",
 }
 
 // The following quoted string enumerates the characters which may be escaped: "+-=&|><!(){}[]^\"~*?:\\/ "

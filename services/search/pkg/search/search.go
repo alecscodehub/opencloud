@@ -196,3 +196,17 @@ func ParseScope(query string) (string, string) {
 	}
 	return query, ""
 }
+
+// ParseFlags extracts supported flags from the query string and returns the cleaned query and a map of flags
+func ParseFlags(query string) (string, []string) {
+	supportedFlags := []string{"is:favorite"}
+	flags := []string{}
+	for _, flag := range supportedFlags {
+		if strings.Contains(query, flag) {
+			flags = append(flags, flag)
+			query = strings.ReplaceAll(query, flag, "")
+		}
+	}
+
+	return strings.TrimSpace(query), flags
+}

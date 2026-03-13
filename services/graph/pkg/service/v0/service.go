@@ -309,6 +309,8 @@ func NewService(opts ...Option) (Graph, error) { //nolint:maintidx
 				r.Route("/drive", func(r chi.Router) {
 					r.Get("/", svc.GetUserDrive)
 					r.Get("/root/children", svc.GetRootDriveChildren)
+					r.Post("/items/{itemID}/follow", svc.FollowDriveItem)
+					r.Delete("/following/{itemID}", svc.UnfollowDriveItem)
 				})
 				r.Get("/drives", svc.GetDrives(APIVersion_1))
 				r.Post("/changePassword", svc.ChangeOwnPassword)

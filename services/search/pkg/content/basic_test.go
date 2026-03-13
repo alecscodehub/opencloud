@@ -2,6 +2,7 @@ package content_test
 
 import (
 	"context"
+	"encoding/json"
 
 	storageProvider "github.com/cs3org/go-cs3apis/cs3/storage/provider/v1beta1"
 	cs3Types "github.com/cs3org/go-cs3apis/cs3/types/v1beta1"
@@ -85,6 +86,27 @@ var _ = Describe("Basic", func() {
 				Expect(doc).ToNot(BeNil())
 				Expect(doc.Mtime).To(Equal(data.expect))
 			}
+		})
+
+		It("extracts favorites", func() {
+			favorites := []string{"foo", "bar"}
+			favBytes, _ := json.Marshal(favorites)
+
+			ri := &storageProvider.ResourceInfo{
+				Opaque: &cs3Types.Opaque{
+					Map: map[string]*cs3Types.OpaqueEntry{
+						"favorites": {
+							Decoder: "json",
+							Value:   favBytes,
+						},
+					},
+				},
+			}
+
+			doc, err := basic.Extract(ctx, ri)
+			Expect(err).To(BeNil())
+			Expect(doc).ToNot(BeNil())
+			Expect(doc.Favorites).To(Equal(favorites))
 		})
 	})
 })

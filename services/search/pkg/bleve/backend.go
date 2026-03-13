@@ -134,6 +134,7 @@ func (b *Backend) Search(_ context.Context, sir *searchService.SearchIndexReques
 				MimeType:   getFieldValue[string](hit.Fields, "MimeType"),
 				Deleted:    getFieldValue[bool](hit.Fields, "Deleted"),
 				Tags:       getFieldSliceValue[string](hit.Fields, "Tags"),
+				Favorites:  getFieldSliceValue[string](hit.Fields, "Favorites"),
 				Highlights: getFragmentValue(hit.Fragments, "Content", 0),
 				Audio:      getAudioValue[searchMessage.Audio](hit.Fields),
 				Image:      getImageValue[searchMessage.Image](hit.Fields),

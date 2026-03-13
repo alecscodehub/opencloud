@@ -116,8 +116,17 @@ func (s *Service) Search(ctx context.Context, req *searchsvc.SearchRequest) (*se
 	}
 	currentUser := revactx.ContextMustGetUser(ctx)
 
+	// Handle flags
+	query, flags := ParseFlags(req.Query)
+	for _, flag := range flags {
+		switch flag {
+		case "is:favorite":
+			query += " Favorites:\"" + currentUser.GetId().GetOpaqueId() + "\""
+		}
+	}
+
 	// Extract scope from query if set
-	query, scope := ParseScope(req.Query)
+	query, scope := ParseScope(query)
 	if query == "" {
 		return nil, errtypes.BadRequest("empty query provided")
 	}

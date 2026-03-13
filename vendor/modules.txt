@@ -315,7 +315,7 @@ github.com/crewjam/saml
 github.com/crewjam/saml/logger
 github.com/crewjam/saml/samlsp
 github.com/crewjam/saml/xmlenc
-# github.com/cs3org/go-cs3apis v0.0.0-20260130145416-2dc593dc27e7
+# github.com/cs3org/go-cs3apis v0.0.0-20260310080202-fb97596763d6
 ## explicit; go 1.21
 github.com/cs3org/go-cs3apis/cs3/app/provider/v1beta1
 github.com/cs3org/go-cs3apis/cs3/app/registry/v1beta1
@@ -737,9 +737,6 @@ github.com/golang/protobuf/ptypes/empty
 # github.com/golang/snappy v0.0.4
 ## explicit
 github.com/golang/snappy
-# github.com/gomodule/redigo v1.9.3
-## explicit; go 1.17
-github.com/gomodule/redigo/redis
 # github.com/google/go-cmp v0.7.0
 ## explicit; go 1.21
 github.com/google/go-cmp/cmp
@@ -762,8 +759,8 @@ github.com/google/go-tpm/tpmutil/tbs
 # github.com/google/pprof v0.0.0-20260115054156-294ebfa9ad83
 ## explicit; go 1.24.0
 github.com/google/pprof/profile
-# github.com/google/renameio/v2 v2.0.1
-## explicit; go 1.13
+# github.com/google/renameio/v2 v2.0.2
+## explicit; go 1.25
 github.com/google/renameio/v2
 # github.com/google/uuid v1.6.0
 ## explicit
@@ -1084,8 +1081,8 @@ github.com/minio/highwayhash
 # github.com/minio/md5-simd v1.1.2
 ## explicit; go 1.14
 github.com/minio/md5-simd
-# github.com/minio/minio-go/v7 v7.0.98
-## explicit; go 1.24.0
+# github.com/minio/minio-go/v7 v7.0.99
+## explicit; go 1.25
 github.com/minio/minio-go/v7
 github.com/minio/minio-go/v7/pkg/cors
 github.com/minio/minio-go/v7/pkg/credentials
@@ -1370,11 +1367,11 @@ github.com/open-policy-agent/opa/v1/version
 # github.com/opencloud-eu/icap-client v0.0.0-20250930132611-28a2afe62d89
 ## explicit; go 1.24.6
 github.com/opencloud-eu/icap-client
-# github.com/opencloud-eu/libre-graph-api-go v1.0.8-0.20260204102724-10bcda1b3068
+# github.com/opencloud-eu/libre-graph-api-go v1.0.8-0.20260310090739-853d972b282d
 ## explicit; go 1.18
 github.com/opencloud-eu/libre-graph-api-go
-# github.com/opencloud-eu/reva/v2 v2.42.5
-## explicit; go 1.24.1
+# github.com/opencloud-eu/reva/v2 v2.42.6-0.20260311175421-d77bc89ffe35
+## explicit; go 1.25.0
 github.com/opencloud-eu/reva/v2/cmd/revad/internal/grace
 github.com/opencloud-eu/reva/v2/cmd/revad/runtime
 github.com/opencloud-eu/reva/v2/internal/grpc/interceptors/appctx
@@ -1502,16 +1499,6 @@ github.com/opencloud-eu/reva/v2/pkg/auth/registry/registry
 github.com/opencloud-eu/reva/v2/pkg/auth/registry/static
 github.com/opencloud-eu/reva/v2/pkg/auth/scope
 github.com/opencloud-eu/reva/v2/pkg/bytesize
-github.com/opencloud-eu/reva/v2/pkg/cbox/favorite/sql
-github.com/opencloud-eu/reva/v2/pkg/cbox/group/rest
-github.com/opencloud-eu/reva/v2/pkg/cbox/loader
-github.com/opencloud-eu/reva/v2/pkg/cbox/preferences/sql
-github.com/opencloud-eu/reva/v2/pkg/cbox/publicshare/sql
-github.com/opencloud-eu/reva/v2/pkg/cbox/share/sql
-github.com/opencloud-eu/reva/v2/pkg/cbox/storage/eoshomewrapper
-github.com/opencloud-eu/reva/v2/pkg/cbox/storage/eoswrapper
-github.com/opencloud-eu/reva/v2/pkg/cbox/user/rest
-github.com/opencloud-eu/reva/v2/pkg/cbox/utils
 github.com/opencloud-eu/reva/v2/pkg/conversions
 github.com/opencloud-eu/reva/v2/pkg/ctx
 github.com/opencloud-eu/reva/v2/pkg/datatx
@@ -1567,7 +1554,6 @@ github.com/opencloud-eu/reva/v2/pkg/ocm/invite/repository/json
 github.com/opencloud-eu/reva/v2/pkg/ocm/invite/repository/loader
 github.com/opencloud-eu/reva/v2/pkg/ocm/invite/repository/memory
 github.com/opencloud-eu/reva/v2/pkg/ocm/invite/repository/registry
-github.com/opencloud-eu/reva/v2/pkg/ocm/invite/repository/sql
 github.com/opencloud-eu/reva/v2/pkg/ocm/provider
 github.com/opencloud-eu/reva/v2/pkg/ocm/provider/authorizer/json
 github.com/opencloud-eu/reva/v2/pkg/ocm/provider/authorizer/loader
@@ -1600,7 +1586,6 @@ github.com/opencloud-eu/reva/v2/pkg/publicshare/manager/json/persistence/file
 github.com/opencloud-eu/reva/v2/pkg/publicshare/manager/json/persistence/memory
 github.com/opencloud-eu/reva/v2/pkg/publicshare/manager/loader
 github.com/opencloud-eu/reva/v2/pkg/publicshare/manager/memory
-github.com/opencloud-eu/reva/v2/pkg/publicshare/manager/owncloudsql
 github.com/opencloud-eu/reva/v2/pkg/publicshare/manager/registry
 github.com/opencloud-eu/reva/v2/pkg/registry
 github.com/opencloud-eu/reva/v2/pkg/rgrpc
@@ -1620,10 +1605,8 @@ github.com/opencloud-eu/reva/v2/pkg/rhttp/router
 github.com/opencloud-eu/reva/v2/pkg/sdk/common
 github.com/opencloud-eu/reva/v2/pkg/share
 github.com/opencloud-eu/reva/v2/pkg/share/cache
-github.com/opencloud-eu/reva/v2/pkg/share/cache/warmup/cbox
 github.com/opencloud-eu/reva/v2/pkg/share/cache/warmup/loader
 github.com/opencloud-eu/reva/v2/pkg/share/cache/warmup/registry
-github.com/opencloud-eu/reva/v2/pkg/share/manager/json
 github.com/opencloud-eu/reva/v2/pkg/share/manager/jsoncs3
 github.com/opencloud-eu/reva/v2/pkg/share/manager/jsoncs3/providercache
 github.com/opencloud-eu/reva/v2/pkg/share/manager/jsoncs3/receivedsharecache
@@ -1631,7 +1614,6 @@ github.com/opencloud-eu/reva/v2/pkg/share/manager/jsoncs3/sharecache
 github.com/opencloud-eu/reva/v2/pkg/share/manager/jsoncs3/shareid
 github.com/opencloud-eu/reva/v2/pkg/share/manager/loader
 github.com/opencloud-eu/reva/v2/pkg/share/manager/memory
-github.com/opencloud-eu/reva/v2/pkg/share/manager/owncloudsql
 github.com/opencloud-eu/reva/v2/pkg/share/manager/registry
 github.com/opencloud-eu/reva/v2/pkg/sharedconf
 github.com/opencloud-eu/reva/v2/pkg/signedurl
@@ -1657,10 +1639,6 @@ github.com/opencloud-eu/reva/v2/pkg/siteacc/manager/gocdb
 github.com/opencloud-eu/reva/v2/pkg/smtpclient
 github.com/opencloud-eu/reva/v2/pkg/storage
 github.com/opencloud-eu/reva/v2/pkg/storage/cache
-github.com/opencloud-eu/reva/v2/pkg/storage/favorite
-github.com/opencloud-eu/reva/v2/pkg/storage/favorite/loader
-github.com/opencloud-eu/reva/v2/pkg/storage/favorite/memory
-github.com/opencloud-eu/reva/v2/pkg/storage/favorite/registry
 github.com/opencloud-eu/reva/v2/pkg/storage/fs/cephfs
 github.com/opencloud-eu/reva/v2/pkg/storage/fs/decomposed
 github.com/opencloud-eu/reva/v2/pkg/storage/fs/decomposed/blobstore

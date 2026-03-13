@@ -288,6 +288,12 @@ _ocdav: api compatibility, return correct status code_
 - [coreApiFavorites/favoritesSharingToShares.feature:91](https://github.com/opencloud-eu/opencloud/blob/main/tests/acceptance/features/coreApiFavorites/favoritesSharingToShares.feature#L91)
 - [coreApiFavorites/favoritesSharingToShares.feature:92](https://github.com/opencloud-eu/opencloud/blob/main/tests/acceptance/features/coreApiFavorites/favoritesSharingToShares.feature#L92)
 - [coreApiFavorites/favoritesSharingToShares.feature:93](https://github.com/opencloud-eu/opencloud/blob/main/tests/acceptance/features/coreApiFavorites/favoritesSharingToShares.feature#L93)
+- [coreApiFavorites/favoritesSharingToShares.feature:112](https://github.com/opencloud-eu/opencloud/blob/main/tests/acceptance/features/coreApiFavorites/favoritesSharingToShares.feature#L112)
+- [coreApiFavorites/favoritesSharingToShares.feature:113](https://github.com/opencloud-eu/opencloud/blob/main/tests/acceptance/features/coreApiFavorites/favoritesSharingToShares.feature#L113)
+- [coreApiFavorites/favoritesSharingToShares.feature:114](https://github.com/opencloud-eu/opencloud/blob/main/tests/acceptance/features/coreApiFavorites/favoritesSharingToShares.feature#L114)
+- [apiSpacesShares/favorite.feature:56](https://github.com/opencloud-eu/opencloud/blob/main/tests/acceptance/features/apiSpacesShares/favorite.feature#L56)
+
+
 
 #### [WWW-Authenticate header for unauthenticated requests is not clear](https://github.com/owncloud/ocis/issues/2285)
 

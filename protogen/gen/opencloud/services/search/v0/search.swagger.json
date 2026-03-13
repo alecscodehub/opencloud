@@ -282,6 +282,12 @@
         },
         "photo": {
           "$ref": "#/definitions/v0Photo"
+        },
+        "favorites": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       }
     },
