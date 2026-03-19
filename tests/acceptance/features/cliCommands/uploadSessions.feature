@@ -84,6 +84,9 @@ Feature: List upload sessions via CLI command
       | file3.txt |
     And the CLI response should not contain these entries:
       | file1.txt |
+    And for user "Alice" the space "Personal" should not contain these entries:
+      | file2.txt |
+      | file3.txt |
 
 
   Scenario: restart upload sessions that are in postprocessing
