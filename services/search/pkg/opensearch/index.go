@@ -16,8 +16,9 @@ import (
 
 var (
 	ErrManualActionRequired                  = errors.New("manual action required")
-	IndexManagerLatest                       = IndexIndexManagerResourceV1
+	IndexManagerLatest                       = IndexIndexManagerResourceV2
 	IndexIndexManagerResourceV1 IndexManager = "resource_v1.json"
+	IndexIndexManagerResourceV2 IndexManager = "resource_v2.json"
 )
 
 //go:embed internal/indexes/*.json
