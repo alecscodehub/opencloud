@@ -115,7 +115,9 @@ func (b *Backend) Search(ctx context.Context, sir *searchService.SearchIndexRequ
 				PreTags:  []string{"<mark>"},
 				PostTags: []string{"</mark>"},
 				Fields: map[string]osu.BodyParamHighlight{
-					"Content": {},
+					"Content": {
+						Type: "fvh",
+					},
 				},
 			},
 		},

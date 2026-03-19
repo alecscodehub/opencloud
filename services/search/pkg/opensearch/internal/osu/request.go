@@ -43,6 +43,7 @@ func (q QueryReqBody[O]) MarshalJSON() ([]byte, error) {
 type BodyParamHighlight struct {
 	PreTags  []string                      `json:"pre_tags,omitempty"`
 	PostTags []string                      `json:"post_tags,omitempty"`
+	Type     string                        `json:"type,omitempty"`
 	Fields   map[string]BodyParamHighlight `json:"fields,omitempty"`
 }
 
