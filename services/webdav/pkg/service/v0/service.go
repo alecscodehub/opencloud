@@ -3,6 +3,7 @@ package svc
 import (
 	"context"
 	"encoding/xml"
+	"fmt"
 	"io"
 	"math/rand/v2"
 	"net/http"
@@ -277,6 +278,20 @@ func (g Webdav) SpacesThumbnail(w http.ResponseWriter, r *http.Request) {
 	g.sendThumbnailResponse(rsp, w, r)
 }
 
+func whoami(gatewayClient gatewayv1beta1.GatewayAPIClient, ctx context.Context, token string) (*userv1beta1.User, error) {
+	// look up user from token via WhoAmI
+	userRes, err := gatewayClient.WhoAmI(ctx, &gatewayv1beta1.WhoAmIRequest{
+		Token: token,
+	})
+	if err != nil {
+		return nil, err
+	}
+	if userRes.Status.Code != rpcv1beta1.Code_CODE_OK {
+		return nil, fmt.Errorf("could not get user: %s", userRes.GetStatus().GetMessage())
+	}
+	return userRes.GetUser(), nil
+}
+
 // Thumbnail implements the Service interface.
 func (g Webdav) Thumbnail(w http.ResponseWriter, r *http.Request) {
 	logger := g.log.SubloggerWithRequestID(r.Context())
@@ -298,21 +313,12 @@ func (g Webdav) Thumbnail(w http.ResponseWriter, r *http.Request) {
 
 	var user *userv1beta1.User
 	if tr.Identifier == "" {
-		// look up user from token via WhoAmI
-		userRes, err := gatewayClient.WhoAmI(r.Context(), &gatewayv1beta1.WhoAmIRequest{
-			Token: t,
-		})
+		user, err = whoami(gatewayClient, r.Context(), t)
 		if err != nil {
-			logger.Error().Err(err).Msg("could not get user: transport error")
+			logger.Error().Err(err).Msg("could not get user")
 			renderError(w, r, errInternalError("could not get user"))
 			return
 		}
-		if userRes.Status.Code != rpcv1beta1.Code_CODE_OK {
-			logger.Debug().Str("grpcmessage", userRes.GetStatus().GetMessage()).Msg("could not get user")
-			renderError(w, r, errInternalError("could not get user"))
-			return
-		}
-		user = userRes.GetUser()
 	} else {
 		// look up user from URL via GetUserByClaim
 		ctx := grpcmetadata.AppendToOutgoingContext(r.Context(), revactx.TokenHeader, t)

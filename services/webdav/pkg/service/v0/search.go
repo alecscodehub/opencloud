@@ -8,9 +8,11 @@ import (
 	"net/http"
 	"net/url"
 	"path"
+	"slices"
 	"strconv"
 	"strings"
 
+	userv1beta1 "github.com/cs3org/go-cs3apis/cs3/identity/user/v1beta1"
 	provider "github.com/cs3org/go-cs3apis/cs3/storage/provider/v1beta1"
 	merrors "go-micro.dev/v4/errors"
 	"go-micro.dev/v4/metadata"
@@ -37,6 +39,22 @@ const (
 // Search is the endpoint for retrieving search results for REPORT requests
 func (g Webdav) Search(w http.ResponseWriter, r *http.Request) {
 	logger := g.log.SubloggerWithRequestID(r.Context())
+	t := r.Header.Get(revactx.TokenHeader)
+
+	gatewayClient, err := g.gatewaySelector.Next()
+	if err != nil {
+		logger.Error().Err(err).Msg("could not get reva gatewayClient")
+		renderError(w, r, errInternalError("could not get reva gatewayClient"))
+		return
+	}
+
+	user, err := whoami(gatewayClient, r.Context(), t)
+	if err != nil {
+		logger.Error().Err(err).Msg("could not get user")
+		renderError(w, r, errInternalError("could not get user"))
+		return
+	}
+
 	rep, err := readReport(r.Body)
 	if err != nil {
 		renderError(w, r, errBadRequest(err.Error()))
@@ -50,7 +68,6 @@ func (g Webdav) Search(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	t := r.Header.Get(revactx.TokenHeader)
 	ctx := revactx.ContextSetToken(r.Context(), t)
 	ctx = metadata.Set(ctx, revactx.TokenHeader, t)
 
@@ -88,13 +105,12 @@ func (g Webdav) Search(w http.ResponseWriter, r *http.Request) {
 		logger.Error().Err(err).Msg("could not get search results")
 		return
 	}
-
-	g.sendSearchResponse(rsp, w, r)
+	g.sendSearchResponse(rsp, w, r, user)
 }
 
-func (g Webdav) sendSearchResponse(rsp *searchsvc.SearchResponse, w http.ResponseWriter, r *http.Request) {
+func (g Webdav) sendSearchResponse(rsp *searchsvc.SearchResponse, w http.ResponseWriter, r *http.Request, user *userv1beta1.User) {
 	logger := g.log.SubloggerWithRequestID(r.Context())
-	responsesXML, err := multistatusResponse(r.Context(), g.config.OpenCloudPublicURL, rsp.Matches)
+	responsesXML, err := multistatusResponse(r.Context(), g.config.OpenCloudPublicURL, rsp.Matches, user)
 	if err != nil {
 		logger.Error().Err(err).Msg("error formatting propfind")
 		w.WriteHeader(http.StatusInternalServerError)
@@ -112,10 +128,10 @@ func (g Webdav) sendSearchResponse(rsp *searchsvc.SearchResponse, w http.Respons
 }
 
 // multistatusResponse converts a list of matches into a multistatus response string
-func multistatusResponse(ctx context.Context, publicURL string, matches []*searchmsg.Match) ([]byte, error) {
+func multistatusResponse(ctx context.Context, publicURL string, matches []*searchmsg.Match, user *userv1beta1.User) ([]byte, error) {
 	responses := make([]*propfind.ResponseXML, 0, len(matches))
 	for i := range matches {
-		res, err := matchToPropResponse(ctx, publicURL, matches[i])
+		res, err := matchToPropResponse(ctx, publicURL, matches[i], user)
 		if err != nil {
 			return nil, err
 		}
@@ -131,7 +147,7 @@ func multistatusResponse(ctx context.Context, publicURL string, matches []*searc
 	return msg, nil
 }
 
-func matchToPropResponse(ctx context.Context, publicURL string, match *searchmsg.Match) (*propfind.ResponseXML, error) {
+func matchToPropResponse(ctx context.Context, publicURL string, match *searchmsg.Match, user *userv1beta1.User) (*propfind.ResponseXML, error) {
 	// unfortunately, search uses own versions of ResourceId and Ref. So we need to assert them here
 	var (
 		ref string
@@ -232,6 +248,11 @@ func matchToPropResponse(ctx context.Context, publicURL string, match *searchmsg
 			OpaqueId:  match.Entity.Id.OpaqueId,
 		}))
 		propstatOK.Prop = append(propstatOK.Prop, prop.Escaped("oc:privatelink", privateURL.String()))
+	}
+
+	// enrich results with favorite flag for the user performing the search
+	if slices.Contains(match.Entity.Favorites, user.Id.OpaqueId) {
+		propstatOK.Prop = append(propstatOK.Prop, prop.Escaped("oc:favorite", "1"))
 	}
 
 	if len(propstatOK.Prop) > 0 {
