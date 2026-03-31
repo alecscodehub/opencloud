@@ -1,5 +1,13 @@
 # Changelog
 
+## [4.0.5](https://github.com/opencloud-eu/opencloud/releases/tag/v4.0.5) - 2026-03-31
+
+### ❤️ Thanks to all contributors! ❤️
+
+@ScharfViktor
+
+
+
 ## [4.0.4](https://github.com/opencloud-eu/opencloud/releases/tag/v4.0.4) - 2026-03-30
 
 ### ❤️ Thanks to all contributors! ❤️
