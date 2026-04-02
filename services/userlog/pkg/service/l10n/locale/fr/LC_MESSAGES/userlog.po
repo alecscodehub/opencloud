@@ -5,15 +5,16 @@
 # 
 # Translators:
 # eric_G <junk.eg@free.fr>, 2025
+# Benoît Aguesse, 2026
 # 
 #, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: EMAIL\n"
-"POT-Creation-Date: 2026-03-26 00:05+0000\n"
+"POT-Creation-Date: 2026-04-02 00:05+0000\n"
 "PO-Revision-Date: 2025-01-27 10:17+0000\n"
-"Last-Translator: eric_G <junk.eg@free.fr>, 2025\n"
+"Last-Translator: Benoît Aguesse, 2026\n"
 "Language-Team: French (https://app.transifex.com/opencloud-eu/teams/204053/fr/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -85,6 +86,10 @@ msgid ""
 " cloud. This could be due to an unsupported file type, potentially harmful "
 "or prohibited content, or file size limits."
 msgstr ""
+"Le fichier {resource} a été supprimé car il violait les restrictions de ce "
+"cloud. Cela peut être dû à un type de fichier non pris en charge, du contenu"
+" potentiellement malveillant ou prohibé ou des limites de taille de "
+"fichiers."
 
 #: pkg/service/templates.go:8
 msgid "Virus found"
