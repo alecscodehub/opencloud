@@ -1,12 +1,14 @@
 # Changelog
 
-## [4.0.5](https://github.com/opencloud-eu/opencloud/releases/tag/v4.0.5) - 2026-03-31
+## [4.0.5](https://github.com/opencloud-eu/opencloud/releases/tag/v4.0.5) - 2026-04-02
 
 ### ❤️ Thanks to all contributors! ❤️
 
-@ScharfViktor
+@ScharfViktor, @rhafer
 
+### 📦️ Dependencies
 
+- Bump go dependencies with known vulnerabilities [[#2566](https://github.com/opencloud-eu/opencloud/pull/2566)]
 
 ## [4.0.4](https://github.com/opencloud-eu/opencloud/releases/tag/v4.0.4) - 2026-03-30
 
