@@ -14,7 +14,7 @@ require (
 	github.com/blevesearch/bleve/v2 v2.5.7
 	github.com/cenkalti/backoff v2.2.1+incompatible
 	github.com/coreos/go-oidc/v3 v3.18.0
-	github.com/cs3org/go-cs3apis v0.0.0-20260407125717-5d69ba49048b
+	github.com/cs3org/go-cs3apis v0.0.0-20260422093003-c97949ae7a1d
 	github.com/davidbyttow/govips/v2 v2.18.0
 	github.com/dhowden/tag v0.0.0-20240417053706-3d75831295e8
 	github.com/dutchcoders/go-clamd v0.0.0-20170520113014-b970184f4d9e
@@ -65,7 +65,7 @@ require (
 	github.com/open-policy-agent/opa v1.15.2
 	github.com/opencloud-eu/icap-client v0.0.0-20250930132611-28a2afe62d89
 	github.com/opencloud-eu/libre-graph-api-go v1.0.8-0.20260310090739-853d972b282d
-	github.com/opencloud-eu/reva/v2 v2.43.0
+	github.com/opencloud-eu/reva/v2 v2.42.7-0.20260423074216-11463a55c9a4
 	github.com/opensearch-project/opensearch-go/v4 v4.6.0
 	github.com/orcaman/concurrent-map v1.0.0
 	github.com/pkg/errors v0.9.1
