@@ -102,8 +102,8 @@
               "surfaceContainer": "#f6f8fa",
               "surfaceContainerHigh": "#f2f4f5",
               "surfaceContainerHighest": "#eceef0",
-              "chrome": "#20434f",
-              "onChrome": "#ffffff"
+              "chrome": "#f6f8fa",
+              "onChrome": "#191c1d"
             },
             "colorPalette": {
               "icon-archive": "#fbbe54",
@@ -122,8 +122,8 @@
         {
           "isDark": true,
           "label": "Dark Theme",
-          "logo": "themes/opencloud/assets/logo-white.svg",
-          "logoMobile": "themes/opencloud/assets/logo-white-mobile.svg",
+          "logo": "themes/opencloud/assets/logo-dark-mode.svg",
+          "logoMobile": "themes/opencloud/assets/logo-dark-mode-mobile.svg",
           "designTokens": {
             "roles": {
               "primary": "#5cd5fb",
