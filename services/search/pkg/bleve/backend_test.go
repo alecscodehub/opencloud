@@ -138,16 +138,15 @@ var _ = Describe("Bleve", func() {
 				assertDocCount(rootResource.ID, "Size:>100000", 0)
 			})
 
-			// FIXME: switch Title to audio.artist once
-			// https://github.com/opencloud-eu/opencloud/pull/2632 lands
-			// (KQL grammar then accepts dotted keys).
 			It("preserves value case for fields not explicitly marked lowercase", func() {
-				parentResource.Document.Title = "Some Title"
+				parentResource.Document.Audio = &libregraph.Audio{
+					Artist: libregraph.PtrString("Some Artist"),
+				}
 				err := eng.Upsert(parentResource.ID, parentResource)
 				Expect(err).ToNot(HaveOccurred())
 
-				assertDocCount(rootResource.ID, `Title:"Some Title"`, 1)
-				assertDocCount(rootResource.ID, `Title:"some title"`, 0)
+				assertDocCount(rootResource.ID, `audio.artist:"Some Artist"`, 1)
+				assertDocCount(rootResource.ID, `audio.artist:"some artist"`, 0)
 			})
 		})
 
