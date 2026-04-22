@@ -14,11 +14,11 @@ import (
 // lowercasing analyzer. Values bound to these fields are pre-lowercased
 // so query-side matching stays consistent with the index.
 // Keep in sync with services/search/pkg/bleve/index.go NewMapping.
-var lowercaseFields = map[string]bool{
-	"Name":      true,
-	"Tags":      true,
-	"Favorites": true,
-	"Content":   true,
+var lowercaseFields = map[string]struct{}{
+	"Name":      {},
+	"Tags":      {},
+	"Favorites": {},
+	"Content":   {},
 }
 
 var _fields = map[string]string{
@@ -102,7 +102,7 @@ func walk(offset int, nodes []ast.Node) (bleveQuery.Query, int, error) {
 				v = bleveEscaper.Replace(n.Value)
 			}
 
-			if lowercaseFields[k] {
+			if _, ok := lowercaseFields[k]; ok {
 				v = strings.ToLower(v)
 			}
 
