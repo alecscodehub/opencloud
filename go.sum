@@ -589,8 +589,8 @@ github.com/googleapis/gax-go/v2 v2.0.4/go.mod h1:0Wqv26UfaUD9n4G6kQubkQ+KchISgw+
 github.com/googleapis/gax-go/v2 v2.0.5/go.mod h1:DWXyrwAJ9X0FpwwEdw+IPEYBICEFu5mhpdKc/us6bOk=
 github.com/gookit/config/v2 v2.2.7 h1:P58/uENzkDp7r7Hp8YSZxOhZ/F5a5Y/AzyhDUkQYa9A=
 github.com/gookit/config/v2 v2.2.7/go.mod h1:QST99HmkZXXD/HkZmOm1OXpgdAnc6Rl9syGl+u62Pi8=
-github.com/gookit/goutil v0.7.1 h1:AaFJPN9mrdeYBv8HOybri26EHGCC34WJVT7jUStGJsI=
-github.com/gookit/goutil v0.7.1/go.mod h1:vJS9HXctYTCLtCsZot5L5xF+O1oR17cDYO9R0HxBmnU=
+github.com/gookit/goutil v0.7.4 h1:OWgUngToNz+bPlX5aP+EMG31DraEU63uvKMwwT3vseM=
+github.com/gookit/goutil v0.7.4/go.mod h1:vJS9HXctYTCLtCsZot5L5xF+O1oR17cDYO9R0HxBmnU=
 github.com/gookit/ini/v2 v2.3.2 h1:W6tzOGE6zOLQelH2xhcH8BIBZPtnEpJgQ+J6SsAKBSw=
 github.com/gookit/ini/v2 v2.3.2/go.mod h1:StKSqY5niArRwYBS8Z71+iWUt5ow47qt359sS9YQLYY=
 github.com/gophercloud/gophercloud v0.15.1-0.20210202035223-633d73521055/go.mod h1:wRtmUelyIIv3CSSDI47aUwbs075O6i+LY+pXsKCBsb4=
