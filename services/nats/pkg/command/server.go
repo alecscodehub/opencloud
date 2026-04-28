@@ -91,7 +91,9 @@ func Server(cfg *config.Config) *cli.Command {
 			gr.Add(runner.New(cfg.Service.Name+".svc", func() error {
 				return natsServer.ListenAndServe()
 			}, func() {
+				logger.Info().Msg("Gracefully shutting down the NATS server...")
 				natsServer.Shutdown()
+				logger.Info().Msg("NATS server shutdown")
 			}))
 
 			grResults := gr.Run(ctx)
