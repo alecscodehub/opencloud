@@ -433,7 +433,7 @@ func Start(ctx context.Context, o ...Option) error {
 	// go supervisor.Serve()
 	// because that will briefly create a race condition as it starts up, if you try to .Add() services immediately afterward.
 	// https://pkg.go.dev/github.com/thejerf/suture/v4@v4.0.0#Supervisor
-	go s.Supervisor.ServeBackground(ctx)
+	go s.Supervisor.ServeBackground(context.Background())
 
 	for i, service := range s.Services {
 		scheduleServiceTokens(s, service)
