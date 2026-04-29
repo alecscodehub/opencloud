@@ -12,6 +12,8 @@ import (
 	"github.com/opencloud-eu/reva/v2/pkg/events"
 )
 
+const _favoriteLabel = "favorite"
+
 // FollowDriveItem marks a drive item as favorite.
 func (g Graph) FollowDriveItem(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -59,34 +61,36 @@ func (g Graph) FollowDriveItem(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	req := &provider.AddFavoriteRequest{
+	req := &provider.AddLabelRequest{
 		Ref:    ref,
 		UserId: u.Id,
+		Label:  _favoriteLabel,
 	}
 
-	res, err := gatewayClient.AddFavorite(ctx, req)
+	res, err := gatewayClient.AddLabel(ctx, req)
 	if err != nil {
-		g.logger.Error().Err(err).Msg("could not add favorite")
-		errorcode.GeneralException.Render(w, r, http.StatusInternalServerError, "could not add favorite")
+		g.logger.Error().Err(err).Msg("could not add label")
+		errorcode.GeneralException.Render(w, r, http.StatusInternalServerError, "could not add label")
 		return
 	}
 
 	if res.Status.Code != rpc.Code_CODE_OK {
-		errorcode.GeneralException.Render(w, r, http.StatusInternalServerError, "could not add favorite")
+		errorcode.GeneralException.Render(w, r, http.StatusInternalServerError, "could not add label")
 		return
 	}
 
 	if g.eventsPublisher != nil {
-		ev := events.FavoriteAdded{
+		ev := events.LabelAdded{
 			Ref: &provider.Reference{
 				ResourceId: &itemID,
 				Path:       ".",
 			},
+			Label:     _favoriteLabel,
 			UserID:    u.Id,
 			Executant: revaCtx.ContextMustGetUser(r.Context()).Id,
 		}
 		if err := events.Publish(r.Context(), g.eventsPublisher, ev); err != nil {
-			g.logger.Error().Err(err).Msg("Failed to publish FavoriteAdded event")
+			g.logger.Error().Err(err).Msg("Failed to publish LabelAdded event")
 		}
 	}
 
@@ -126,15 +130,16 @@ func (g Graph) UnfollowDriveItem(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	req := &provider.RemoveFavoriteRequest{
+	req := &provider.RemoveLabelRequest{
 		Ref:    ref,
 		UserId: u.Id,
+		Label:  _favoriteLabel,
 	}
 
-	res, err := gatewayClient.RemoveFavorite(ctx, req)
+	res, err := gatewayClient.RemoveLabel(ctx, req)
 	if err != nil {
-		g.logger.Error().Err(err).Msg("could not remove favorite")
-		errorcode.GeneralException.Render(w, r, http.StatusInternalServerError, "could not remove favorite")
+		g.logger.Error().Err(err).Msg("could not remove label")
+		errorcode.GeneralException.Render(w, r, http.StatusInternalServerError, "could not remove label")
 		return
 	}
 
@@ -150,16 +155,17 @@ func (g Graph) UnfollowDriveItem(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if g.eventsPublisher != nil {
-		ev := events.FavoriteRemoved{
+		ev := events.LabelRemoved{
 			Ref: &provider.Reference{
 				ResourceId: &itemID,
 				Path:       ".",
 			},
+			Label:     _favoriteLabel,
 			UserID:    u.Id,
 			Executant: revaCtx.ContextMustGetUser(r.Context()).Id,
 		}
 		if err := events.Publish(r.Context(), g.eventsPublisher, ev); err != nil {
-			g.logger.Error().Err(err).Msg("Failed to publish FavoriteRemoved event")
+			g.logger.Error().Err(err).Msg("Failed to publish LabelRemoved event")
 		}
 	}
 

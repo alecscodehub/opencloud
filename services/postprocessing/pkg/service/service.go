@@ -88,7 +88,7 @@ func NewPostprocessingService(ctx context.Context, logger log.Logger, sto store.
 
 	m := metrics.New()
 	m.BuildInfo.WithLabelValues(version.GetString()).Set(1)
-	monitorMetrics(raw, "postprocessing-pull", m, logger)
+	monitorMetrics(ctx, raw, "postprocessing-pull", m, logger)
 
 	return &PostprocessingService{
 		ctx:     ctx,
@@ -171,7 +171,7 @@ func (pps *PostprocessingService) processEvent(e raw.Event) error {
 	pps.log.Debug().Str("Type", e.Type).Str("ID", e.ID).Msg("processing event received")
 
 	var (
-		next interface{}
+		next any
 		pp   *postprocessing.Postprocessing
 		err  error
 	)
@@ -247,7 +247,7 @@ func (pps *PostprocessingService) processEvent(e raw.Event) error {
 			pps.log.Error().Str("uploadID", ev.UploadID).Err(err).Msg("cannot get upload")
 			return fmt.Errorf("%w: cannot get upload", ErrEvent)
 		}
-		pp.Delay(func(next interface{}) {
+		pp.Delay(func(next any) {
 			if err := events.Publish(ctx, pps.pub, next); err != nil {
 				pps.log.Error().Err(err).Msg("cannot publish event")
 			}
@@ -423,25 +423,30 @@ func (pps *PostprocessingService) findUploadsByStep(step events.Postprocessingst
 	return ids
 }
 
-func monitorMetrics(stream raw.Stream, name string, m *metrics.Metrics, logger log.Logger) {
-	ctx := context.Background()
+func monitorMetrics(ctx context.Context, stream raw.Stream, name string, m *metrics.Metrics, logger log.Logger) {
 	consumer, err := stream.JetStream().Consumer(ctx, name)
 	if err != nil {
 		logger.Error().Err(err).Msg("failed to get consumer")
 	}
 	ticker := time.NewTicker(5 * time.Second)
 	go func() {
-		for range ticker.C {
-			info, err := consumer.Info(ctx)
-			if err != nil {
-				logger.Error().Err(err).Msg("failed to get consumer")
-				continue
-			}
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-ticker.C:
+				info, err := consumer.Info(ctx)
+				if err != nil {
+					logger.Error().Err(err).Msg("failed to get consumer")
+					continue
+				}
 
-			m.EventsOutstandingAcks.Set(float64(info.NumAckPending))
-			m.EventsUnprocessed.Set(float64(info.NumPending))
-			m.EventsRedelivered.Set(float64(info.NumRedelivered))
-			logger.Trace().Msg("updated postprocessing event metrics")
+				m.EventsOutstandingAcks.Set(float64(info.NumAckPending))
+				m.EventsUnprocessed.Set(float64(info.NumPending))
+				m.EventsRedelivered.Set(float64(info.NumRedelivered))
+				logger.Trace().Msg("updated postprocessing event metrics")
+			}
 		}
 	}()
 }
