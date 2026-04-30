@@ -118,7 +118,7 @@ func (m IndexManager) Apply(ctx context.Context, name string, client *opensearch
 
 		if errs != nil {
 			return fmt.Errorf(
-				"index %s allready exists and is different from the requested version, %w: %w",
+				"index %s already exists and is different from the requested version, %w: %w",
 				name,
 				ErrManualActionRequired,
 				errors.Join(errs...),
