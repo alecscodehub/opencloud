@@ -10,6 +10,17 @@ import (
 	"github.com/opencloud-eu/opencloud/pkg/kql"
 )
 
+// lowercaseFields lists the bleve fields whose index mapping uses a
+// lowercasing analyzer. Values bound to these fields are pre-lowercased
+// so query-side matching stays consistent with the index.
+// Keep in sync with services/search/pkg/bleve/index.go NewMapping.
+var lowercaseFields = map[string]struct{}{
+	"Name":      {},
+	"Tags":      {},
+	"Favorites": {},
+	"Content":   {},
+}
+
 var _fields = map[string]string{
 	"rootid":    "RootID",
 	"path":      "Path",
@@ -91,7 +102,7 @@ func walk(offset int, nodes []ast.Node) (bleveQuery.Query, int, error) {
 				v = bleveEscaper.Replace(n.Value)
 			}
 
-			if k != "Hidden" {
+			if _, ok := lowercaseFields[k]; ok {
 				v = strings.ToLower(v)
 			}
 
