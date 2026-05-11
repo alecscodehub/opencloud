@@ -4,43 +4,43 @@
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 # 
 # Translators:
-# Stephan Paternotte <stephan@paternottes.net>, 2025
+# BoneNI, 2026
 # 
 #, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: EMAIL\n"
-"POT-Creation-Date: 2026-05-06 00:01+0000\n"
+"POT-Creation-Date: 2026-04-30 00:02+0000\n"
 "PO-Revision-Date: 2025-01-27 10:17+0000\n"
-"Last-Translator: Stephan Paternotte <stephan@paternottes.net>, 2025\n"
-"Language-Team: Dutch (https://app.transifex.com/opencloud-eu/teams/204053/nl/)\n"
+"Last-Translator: BoneNI, 2026\n"
+"Language-Team: Lao (https://app.transifex.com/opencloud-eu/teams/204053/lo/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: nl\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Language: lo\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
 
 #. UnsharedSpace email template, resolves via {{ .CallToAction }}
 #: pkg/email/templates.go:65
 msgid "Click here to check it: {ShareLink}"
-msgstr "Klik hier om het te controleren: {ShareLink}"
+msgstr "ກົດບ່ອນນີ້ເພື່ອເຂົ້າໄປກວດສອບ: {ShareLink}"
 
 #. ShareCreated email template, resolves via {{ .CallToAction }}
 #. SharedSpace email template, resolves via {{ .CallToAction }}
 #: pkg/email/templates.go:23 pkg/email/templates.go:50
 msgid "Click here to view it: {ShareLink}"
-msgstr "Klik hier om het te bekijken: {ShareLink}"
+msgstr "ກົດບ່ອນນີ້ເພື່ອເບິ່ງ: {ShareLink}"
 
 #. ShareCreated email template, resolves via {{ .Greeting }}
 #: pkg/email/templates.go:19
 msgid "Hello {ShareGrantee}"
-msgstr "Beste {ShareGrantee}"
+msgstr "ສະບາຍດີ {ShareGrantee}"
 
 #. ShareExpired email template, resolves via {{ .Greeting }}
 #: pkg/email/templates.go:32
 msgid "Hello {ShareGrantee},"
-msgstr "Beste {ShareGrantee},"
+msgstr "ສະບາຍດີ {ShareGrantee},"
 
 #. SharedSpace email template, resolves via {{ .Greeting }}
 #. UnsharedSpace email template, resolves via {{ .Greeting }}
@@ -48,12 +48,12 @@ msgstr "Beste {ShareGrantee},"
 #: pkg/email/templates.go:46 pkg/email/templates.go:59
 #: pkg/email/templates.go:74
 msgid "Hello {SpaceGrantee},"
-msgstr "Beste {SpaceGrantee},"
+msgstr "ສະບາຍດີ {SpaceGrantee},"
 
 #. Grouped email template, resolves via {{ .Greeting }}
 #: pkg/email/templates.go:118
 msgid "Hi {DisplayName},"
-msgstr "Hallo {DisplayName},"
+msgstr "ສະບາຍດີ {DisplayName},"
 
 #. ScienceMeshInviteTokenGenerated email template, resolves via {{ .Greeting
 #. }}
@@ -61,17 +61,17 @@ msgstr "Hallo {DisplayName},"
 #. via {{ .Greeting }}
 #: pkg/email/templates.go:87 pkg/email/templates.go:104
 msgid "Hi,"
-msgstr "Hallo,"
+msgstr "ສະບາຍດີ,"
 
 #. MembershipExpired email template, Subject field (resolves directly)
 #: pkg/email/templates.go:72
 msgid "Membership of '{SpaceName}' expired at {ExpiredAt}"
-msgstr "Lidmaatschap van '{SpaceName}' is verlopen op {ExpiredAt}"
+msgstr "ການເປັນສະມາຊິກຂອງ '{SpaceName}' ໝົດອາຍຸເມື່ອ {ExpiredAt}"
 
 #. Grouped email template, Subject field (resolves directly)
 #: pkg/email/templates.go:116
 msgid "Report"
-msgstr "Rapportage"
+msgstr "ລາຍງານ"
 
 #. ScienceMeshInviteTokenGenerated email template, Subject field (resolves
 #. directly)
@@ -79,12 +79,12 @@ msgstr "Rapportage"
 #. field (resolves directly)
 #: pkg/email/templates.go:85 pkg/email/templates.go:102
 msgid "ScienceMesh: {InitiatorName} wants to collaborate with you"
-msgstr "ScienceMesh: {InitiatorName} wil met je samenwerken"
+msgstr "ScienceMesh: {InitiatorName} ຕ້ອງການຮ່ວມມືກັບທ່ານ"
 
 #. ShareExpired email template, Subject field (resolves directly)
 #: pkg/email/templates.go:30
 msgid "Share to '{ShareFolder}' expired at {ExpiredAt}"
-msgstr "Share '{ShareFolder}' is verlopen op {ExpiredAt}"
+msgstr "ການແບ່ງປັນໄປຍັງ '{ShareFolder}' ໝົດອາຍຸເມື່ອ {ExpiredAt}"
 
 #. MembershipExpired email template, resolves via {{ .MessageBody }}
 #: pkg/email/templates.go:76
@@ -93,9 +93,9 @@ msgid ""
 "\n"
 "Even though this membership has expired you still might have access through other shares and/or space memberships"
 msgstr ""
-"Jouw lidmaatschap van ruimte {SpaceName} is verlopen op {ExpiredAt}\n"
+"ການເປັນສະມາຊິກພື້ນທີ່ {SpaceName} ຂອງທ່ານໝົດອາຍຸເມື່ອ {ExpiredAt}\n"
 "\n"
-"Hoewel dit lidmaatschap is verlopen, kun je mogelijk nog steeds toegang hebben via andere shares en/of ruimtelidmaatschappen."
+"ເຖິງແມ່ນວ່າການເປັນສະມາຊິກນີ້ໝົດອາຍຸແລ້ວ ແຕ່ທ່ານອາດຈະຍັງສາມາດເຂົ້າເຖິງໄດ້ຜ່ານການແບ່ງປັນອື່ນໆ ແລະ/ຫຼື ການເປັນສະມາຊິກພື້ນທີ່ອື່ນ."
 
 #. ShareExpired email template, resolves via {{ .MessageBody }}
 #: pkg/email/templates.go:34
@@ -104,9 +104,9 @@ msgid ""
 "\n"
 "Even though this share has been revoked you still might have access through other shares and/or space memberships."
 msgstr ""
-"Jouw toegang tot {ShareFolder} is verlopen op {ExpiredAt}\n"
+"ການແບ່ງປັນ {ShareFolder} ຂອງທ່ານໝົດອາຍຸເມື່ອ {ExpiredAt}\n"
 "\n"
-"Hoewel de toegang is ingetrokken, kun je mogelijk nog steeds toegang hebben via andere shares en/of ruimtelidmaatschappen."
+"ເຖິງແມ່ນວ່າການແບ່ງປັນນີ້ຈະຖືກຍົກເລີກແລ້ວ ແຕ່ທ່ານອາດຈະຍັງສາມາດເຂົ້າເຖິງໄດ້ຜ່ານການແບ່ງປັນອື່ນໆ ແລະ/ຫຼື ການເປັນສະມາຊິກພື້ນທີ່."
 
 #. ScienceMeshInviteTokenGeneratedWithoutShareLink email template, resolves
 #. via {{ .MessageBody }}
@@ -117,8 +117,8 @@ msgid ""
 "  Token: {Token}\n"
 "  ProviderDomain: {ProviderDomain}"
 msgstr ""
-"{ShareSharer} ({ShareSharerMail}) wil samenwerkingsbronnen met je delen.\n"
-"Open je federatie-instellingen en gebruik de volgende gegevens.:\n"
+"{ShareSharer} ({ShareSharerMail}) ຕ້ອງການເລີ່ມແບ່ງປັນຊັບພະຍາກອນການຮ່ວມມືກັບທ່ານ.\n"
+"ກະລຸນາເຂົ້າໄປທີ່ການຕັ້ງຄ່າສະຫະພັນ (federation) ຂອງທ່ານ ແລະ ໃຊ້ລາຍລະອຽດດັ່ງນີ້:\n"
 "  Token: {Token}\n"
 "  ProviderDomain: {ProviderDomain}"
 
@@ -134,28 +134,28 @@ msgid ""
 "  Token: {Token}\n"
 "  ProviderDomain: {ProviderDomain}"
 msgstr ""
-"{ShareSharer} ({ShareSharerMail}) wil samenwerkingsbronnen met je delen.\n"
-"Open de volgende URL om de uitnodiging te accepteren:\n"
+"{ShareSharer} ({ShareSharerMail}) ຕ້ອງການເລີ່ມແບ່ງປັນຊັບພະຍາກອນການຮ່ວມມືກັບທ່ານ.\n"
+"ເພື່ອຕອບຮັບຄຳເຊີນ, ກະລຸນາເຂົ້າໄປທີ່ URL ດັ່ງນີ້:\n"
 "{ShareLink}\n"
 "\n"
-"Alternatief kun je je federatie-instellingen openen en de volgende gegevens gebruiken.:\n"
+"ຫຼື ທ່ານສາມາດເຂົ້າໄປທີ່ການຕັ້ງຄ່າສະຫະພັນ (federation) ຂອງທ່ານ ແລະ ໃຊ້ລາຍລະອຽດດັ່ງນີ້:\n"
 "  Token: {Token}\n"
 "  ProviderDomain: {ProviderDomain}"
 
 #. ShareCreated email template, resolves via {{ .MessageBody }}
 #: pkg/email/templates.go:21
 msgid "{ShareSharer} has shared \"{ShareFolder}\" with you."
-msgstr "{ShareSharer} heeft \"{ShareFolder}\" met jou gedeeld."
+msgstr "{ShareSharer} ໄດ້ແບ່ງປັນ \"{ShareFolder}\" ກັບທ່ານ."
 
 #. ShareCreated email template, Subject field (resolves directly)
 #: pkg/email/templates.go:17
 msgid "{ShareSharer} shared '{ShareFolder}' with you"
-msgstr "{ShareSharer} deelt '{ShareFolder}' met jou"
+msgstr "{ShareSharer} ໄດ້ແບ່ງປັນ '{ShareFolder}' ກັບທ່ານ"
 
 #. SharedSpace email template, resolves via {{ .MessageBody }}
 #: pkg/email/templates.go:48
 msgid "{SpaceSharer} has invited you to join \"{SpaceName}\"."
-msgstr "{SpaceSharer} heeft je uitgenodigd om deel te nemen in \"{SpaceName}\"."
+msgstr "{SpaceSharer} ໄດ້ເຊີນທ່ານເຂົ້າຮ່ວມ \"{SpaceName}\"."
 
 #. UnsharedSpace email template, resolves via {{ .MessageBody }}
 #: pkg/email/templates.go:61
@@ -164,16 +164,16 @@ msgid ""
 "\n"
 "You might still have access through your other groups or direct membership."
 msgstr ""
-"{SpaceSharer} heeft jou verwijderd uit \"{SpaceName}\".\n"
+"{SpaceSharer} ໄດ້ຍ້າຍທ່ານອອກຈາກ \"{SpaceName}\".\n"
 "\n"
-"Je hebt mogelijk nog steeds toegang via andere groepen of directe lidmaatschap."
+"ທ່ານອາດຈະຍັງສາມາດເຂົ້າເຖິງໄດ້ຜ່ານກຸ່ມອື່ນໆ ຫຼື ການເປັນສະມາຊິກໂດຍກົງ."
 
 #. SharedSpace email template, Subject field (resolves directly)
 #: pkg/email/templates.go:44
 msgid "{SpaceSharer} invited you to join {SpaceName}"
-msgstr "{SpaceSharer} heeft jou uitgenodigd om deel te nemen in {SpaceName}"
+msgstr "{SpaceSharer} ໄດ້ເຊີນທ່ານເຂົ້າຮ່ວມ {SpaceName}"
 
 #. UnsharedSpace email template, Subject field (resolves directly)
 #: pkg/email/templates.go:57
 msgid "{SpaceSharer} removed you from {SpaceName}"
-msgstr "{SpaceSharer} heeft jou verwijderd uit {SpaceName}"
+msgstr "{SpaceSharer} ໄດ້ຍ້າຍທ່ານອອກຈາກ {SpaceName}"

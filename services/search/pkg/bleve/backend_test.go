@@ -137,6 +137,17 @@ var _ = Describe("Bleve", func() {
 				assertDocCount(rootResource.ID, "Size:<1000", 0)
 				assertDocCount(rootResource.ID, "Size:>100000", 0)
 			})
+
+			It("preserves value case for fields not explicitly marked lowercase", func() {
+				parentResource.Document.Audio = &libregraph.Audio{
+					Artist: libregraph.PtrString("Some Artist"),
+				}
+				err := eng.Upsert(parentResource.ID, parentResource)
+				Expect(err).ToNot(HaveOccurred())
+
+				assertDocCount(rootResource.ID, `audio.artist:"Some Artist"`, 1)
+				assertDocCount(rootResource.ID, `audio.artist:"some artist"`, 0)
+			})
 		})
 
 		Context("by filename", func() {

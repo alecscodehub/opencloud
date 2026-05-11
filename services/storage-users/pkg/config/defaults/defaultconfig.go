@@ -151,6 +151,7 @@ func DefaultConfig() *config.Config {
 				PermissionsEndpoint:        "eu.opencloud.api.settings",
 				AsyncUploads:               true,
 				ScanDebounceDelay:          1 * time.Second,
+				ScanFS:                     true,
 				WatchFS:                    false,
 				EnableFSRevisions:          false,
 				InotifyStatsFrequency:      5 * time.Minute,
@@ -165,7 +166,7 @@ func DefaultConfig() *config.Config {
 			Store:    "memory",
 			Nodes:    []string{"127.0.0.1:9233"},
 			Database: "storage-users",
-			TTL:      24 * 60 * time.Second,
+			TTL:      24 * time.Hour,
 		},
 		IDCache: config.IDCache{
 			Store:    "nats-js-kv",

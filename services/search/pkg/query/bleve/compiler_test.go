@@ -227,8 +227,8 @@ func Test_compile(t *testing.T) {
 				},
 			},
 			want: query.NewConjunctionQuery([]query.Query{
-				query.NewQueryStringQuery(`author:john\ smith`),
-				query.NewQueryStringQuery(`author:jane`),
+				query.NewQueryStringQuery(`author:John\ Smith`),
+				query.NewQueryStringQuery(`author:Jane`),
 			}),
 			wantErr: false,
 		},
@@ -249,8 +249,8 @@ func Test_compile(t *testing.T) {
 				},
 			},
 			want: query.NewConjunctionQuery([]query.Query{
-				query.NewQueryStringQuery(`author:john\ smith`),
-				query.NewQueryStringQuery(`author:jane`),
+				query.NewQueryStringQuery(`author:John\ Smith`),
+				query.NewQueryStringQuery(`author:Jane`),
 				query.NewQueryStringQuery(`Tags:bestseller`),
 			}),
 			wantErr: false,
