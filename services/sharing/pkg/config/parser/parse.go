@@ -58,5 +58,13 @@ func Validate(cfg *config.Config) error {
 		return shared.MissingSystemUserID(cfg.Service.Name)
 	}
 
+	if cfg.ServiceAccount.ServiceAccountID == "" {
+		return shared.MissingServiceAccountID(cfg.Service.Name)
+	}
+
+	if cfg.ServiceAccount.ServiceAccountSecret == "" {
+		return shared.MissingServiceAccountSecret(cfg.Service.Name)
+	}
+
 	return nil
 }

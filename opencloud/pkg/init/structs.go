@@ -204,7 +204,8 @@ type SettingsService struct {
 
 // Sharing is the configuration for the sharing service
 type Sharing struct {
-	Events Events
+	Events         Events
+	ServiceAccount ServiceAccount `yaml:"service_account"`
 }
 
 // StorageRegistry is the configuration for the storage registry
