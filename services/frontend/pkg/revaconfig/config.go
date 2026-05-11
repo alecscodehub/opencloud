@@ -63,7 +63,8 @@ func FrontendConfigFromStruct(cfg *config.Config, logger log.Logger) (map[string
 		"tags":              true,
 		"archivers":         archivers,
 		"app_providers":     appProviders,
-		"favorites":         true,
+		"favorites":         false,
+		"favorites_v2":         true,
 		"full_text_search":  cfg.FullTextSearch,
 	}
 
