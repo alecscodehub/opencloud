@@ -206,7 +206,7 @@ func (g Graph) GetRootDriveChildren(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	files, err := formatDriveItems(g.logger, lRes.GetInfos())
+	files, err := formatDriveItems(g.logger, g.publicBaseURL, lRes.GetInfos())
 	if err != nil {
 		g.logger.Error().Err(err).Msg("error encoding response as json")
 		errorcode.GeneralException.Render(w, r, http.StatusInternalServerError, err.Error())
@@ -271,7 +271,7 @@ func (g Graph) GetDriveItem(w http.ResponseWriter, r *http.Request) {
 		errorcode.GeneralException.Render(w, r, http.StatusInternalServerError, res.GetStatus().GetMessage())
 		return
 	}
-	driveItem, err := cs3ResourceToDriveItem(g.logger, res.GetInfo())
+	driveItem, err := cs3ResourceToDriveItem(g.logger, g.publicBaseURL, res.GetInfo())
 	if err != nil {
 		errorcode.GeneralException.Render(w, r, http.StatusInternalServerError, err.Error())
 		return
@@ -339,7 +339,7 @@ func (g Graph) GetDriveItemChildren(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	files, err := formatDriveItems(g.logger, res.GetInfos())
+	files, err := formatDriveItems(g.logger, g.publicBaseURL, res.GetInfos())
 	if err != nil {
 		errorcode.GeneralException.Render(w, r, http.StatusInternalServerError, err.Error())
 		return
@@ -416,10 +416,10 @@ func (g Graph) getRemoteItem(ctx context.Context, root *storageprovider.Resource
 	return item, nil
 }
 
-func formatDriveItems(logger *log.Logger, mds []*storageprovider.ResourceInfo) ([]*libregraph.DriveItem, error) {
+func formatDriveItems(logger *log.Logger, publicBaseURL *url.URL, mds []*storageprovider.ResourceInfo) ([]*libregraph.DriveItem, error) {
 	responses := make([]*libregraph.DriveItem, 0, len(mds))
 	for i := range mds {
-		res, err := cs3ResourceToDriveItem(logger, mds[i])
+		res, err := cs3ResourceToDriveItem(logger, publicBaseURL, mds[i])
 		if err != nil {
 			return nil, err
 		}
@@ -433,7 +433,7 @@ func cs3TimestampToTime(t *types.Timestamp) time.Time {
 	return time.Unix(int64(t.GetSeconds()), int64(t.GetNanos()))
 }
 
-func cs3ResourceToDriveItem(logger *log.Logger, res *storageprovider.ResourceInfo) (*libregraph.DriveItem, error) {
+func cs3ResourceToDriveItem(logger *log.Logger, publicBaseURL *url.URL, res *storageprovider.ResourceInfo) (*libregraph.DriveItem, error) {
 	size := new(int64)
 	*size = int64(res.GetSize()) // TODO lurking overflow: make size of libregraph drive item use uint64
 
@@ -441,6 +441,10 @@ func cs3ResourceToDriveItem(logger *log.Logger, res *storageprovider.ResourceInf
 		Id:   libregraph.PtrString(storagespace.FormatResourceID(res.GetId())),
 		Size: size,
 	}
+
+	webURL := *publicBaseURL
+	webURL.Path = path.Join(webURL.Path, "f", storagespace.FormatResourceID(res.GetId()))
+	driveItem.WebUrl = libregraph.PtrString(webURL.String())
 
 	if name := path.Base(res.GetPath()); name != "" {
 		driveItem.Name = &name
