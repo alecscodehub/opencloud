@@ -60,7 +60,7 @@ require (
 	github.com/oklog/run v1.2.0
 	github.com/olekukonko/tablewriter v1.1.4
 	github.com/onsi/ginkgo v1.16.5
-	github.com/onsi/ginkgo/v2 v2.28.1
+	github.com/onsi/ginkgo/v2 v2.28.3
 	github.com/onsi/gomega v1.40.0
 	github.com/open-policy-agent/opa v1.15.2
 	github.com/opencloud-eu/icap-client v0.0.0-20250930132611-28a2afe62d89
@@ -106,7 +106,7 @@ require (
 	golang.org/x/crypto v0.50.0
 	golang.org/x/exp v0.0.0-20250210185358-939b2ce775ac
 	golang.org/x/image v0.38.0
-	golang.org/x/net v0.52.0
+	golang.org/x/net v0.53.0
 	golang.org/x/oauth2 v0.36.0
 	golang.org/x/sync v0.20.0
 	golang.org/x/term v0.42.0
@@ -239,7 +239,7 @@ require (
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/google/go-tpm v0.9.8 // indirect
-	github.com/google/pprof v0.0.0-20260115054156-294ebfa9ad83 // indirect
+	github.com/google/pprof v0.0.0-20260402051712-545e8a4df936 // indirect
 	github.com/google/renameio/v2 v2.0.2 // indirect
 	github.com/gookit/goutil v0.7.4 // indirect
 	github.com/gorilla/handlers v1.5.1 // indirect
@@ -389,10 +389,10 @@ require (
 	go.uber.org/zap v1.27.0 // indirect
 	go.yaml.in/yaml/v2 v2.4.3 // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
-	golang.org/x/mod v0.34.0 // indirect
+	golang.org/x/mod v0.35.0 // indirect
 	golang.org/x/sys v0.43.0 // indirect
 	golang.org/x/time v0.15.0 // indirect
-	golang.org/x/tools v0.43.0 // indirect
+	golang.org/x/tools v0.44.0 // indirect
 	google.golang.org/genproto v0.0.0-20260128011058-8636f8732409 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20260406210006-6f92a3bedf2d // indirect
 	gopkg.in/cenkalti/backoff.v1 v1.1.0 // indirect
