@@ -3,6 +3,7 @@ package svc
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 	"net/url"
 	"slices"
@@ -91,6 +92,10 @@ type ListPermissionsQueryOptions struct {
 
 // NewDriveItemPermissionsService creates a new DriveItemPermissionsService
 func NewDriveItemPermissionsService(logger log.Logger, gatewaySelector pool.Selectable[gateway.GatewayAPIClient], identityCache cache.IdentityCache, config *config.Config) (DriveItemPermissionsService, error) {
+	publicBaseURL, err := url.Parse(config.Spaces.WebDavBase)
+	if err != nil {
+		return DriveItemPermissionsService{}, fmt.Errorf("could not parse graph.spaces.webdav_base: %w", err)
+	}
 	return DriveItemPermissionsService{
 		BaseGraphService: BaseGraphService{
 			logger:          &log.Logger{Logger: logger.With().Str("graph api", "DrivesDriveItemService").Logger()},
@@ -98,6 +103,7 @@ func NewDriveItemPermissionsService(logger log.Logger, gatewaySelector pool.Sele
 			identityCache:   identityCache,
 			config:          config,
 			availableRoles:  unifiedrole.GetRoles(unifiedrole.RoleFilterIDs(config.UnifiedRoles.AvailableRoles...)),
+			publicBaseURL:   publicBaseURL,
 		},
 	}, nil
 }
@@ -405,7 +411,7 @@ func (s DriveItemPermissionsService) ListPermissions(ctx context.Context, itemID
 
 	driveItems := make(driveItemsByResourceID, 1)
 	// we can use the statResponse to build the drive item before fetching the shares
-	item, err := cs3ResourceToDriveItem(s.logger, statResponse.GetInfo())
+	item, err := cs3ResourceToDriveItem(s.logger, s.publicBaseURL, statResponse.GetInfo())
 	if err != nil {
 		return collectionOfPermissions, err
 	}
