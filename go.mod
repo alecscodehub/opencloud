@@ -87,7 +87,7 @@ require (
 	github.com/testcontainers/testcontainers-go/modules/opensearch v0.42.0
 	github.com/theckman/yacspin v0.13.12
 	github.com/thejerf/suture/v4 v4.0.6
-	github.com/tidwall/gjson v1.18.0
+	github.com/tidwall/gjson v1.19.0
 	github.com/tidwall/sjson v1.2.5
 	github.com/tus/tusd/v2 v2.9.2
 	github.com/unrolled/secure v1.16.0
