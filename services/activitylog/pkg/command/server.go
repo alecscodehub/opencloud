@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/oklog/run"
 	"github.com/opencloud-eu/opencloud/pkg/log"
+	"github.com/opencloud-eu/opencloud/pkg/runner"
 	"github.com/opencloud-eu/reva/v2/pkg/events"
 	"github.com/opencloud-eu/reva/v2/pkg/events/stream"
 	"github.com/opencloud-eu/reva/v2/pkg/rgrpc/todo/pool"
@@ -62,7 +62,7 @@ func Server(cfg *config.Config) *cobra.Command {
 				return err
 			}
 
-			gr := run.Group{}
+			gr := runner.NewGroup()
 			ctx, cancel := context.WithCancel(cmd.Context())
 
 			mtrcs := metrics.New()
@@ -132,23 +132,7 @@ func Server(cfg *config.Config) *cobra.Command {
 					return err
 				}
 
-				gr.Add(func() error {
-					return svc.Run()
-				}, func(err error) {
-					if err == nil {
-						logger.Info().
-							Str("transport", "http").
-							Str("server", cfg.Service.Name).
-							Msg("Shutting down server")
-					} else {
-						logger.Error().Err(err).
-							Str("transport", "http").
-							Str("server", cfg.Service.Name).
-							Msg("Shutting down server")
-					}
-
-					cancel()
-				})
+				gr.Add(runner.NewGoMicroHttpServerRunner(cfg.Service.Name+".http", svc))
 			}
 
 			{
@@ -162,13 +146,18 @@ func Server(cfg *config.Config) *cobra.Command {
 					return err
 				}
 
-				gr.Add(debugServer.ListenAndServe, func(_ error) {
-					_ = debugServer.Shutdown(ctx)
-					cancel()
-				})
+				gr.Add(runner.NewGolangHttpServerRunner(cfg.Service.Name+".debug", debugServer))
 			}
 
-			return gr.Run()
+			grResults := gr.Run(ctx)
+
+			// return the first non-nil error found in the results
+			for _, grResult := range grResults {
+				if grResult.RunnerError != nil {
+					return grResult.RunnerError
+				}
+			}
+			return nil
 		},
 	}
 }
