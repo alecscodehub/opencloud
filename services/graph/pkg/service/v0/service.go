@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
 	"os"
 	"strconv"
 	"time"
@@ -154,12 +155,18 @@ func NewService(opts ...Option) (Graph, error) { //nolint:maintidx
 		cache.IdentityCacheWithGroupsTTL(time.Duration(options.Config.Spaces.GroupsCacheTTL)),
 	)
 
+	publicBaseURL, err := url.Parse(options.Config.Spaces.WebDavBase)
+	if err != nil {
+		return Graph{}, fmt.Errorf("could not parse graph.spaces.webdav_base: %w", err)
+	}
+
 	baseGraphService := BaseGraphService{
 		logger:          &options.Logger,
 		identityCache:   identityCache,
 		gatewaySelector: options.GatewaySelector,
 		config:          options.Config,
 		availableRoles:  unifiedrole.GetRoles(unifiedrole.RoleFilterIDs(options.Config.UnifiedRoles.AvailableRoles...)),
+		publicBaseURL:   publicBaseURL,
 	}
 
 	drivesDriveItemService, err := NewDrivesDriveItemService(options.Logger, options.GatewaySelector)

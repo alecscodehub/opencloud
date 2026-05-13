@@ -49,6 +49,7 @@ type BaseGraphService struct {
 	identityCache   cache.IdentityCache
 	config          *config.Config
 	availableRoles  []*libregraph.UnifiedRoleDefinition
+	publicBaseURL   *url.URL
 }
 
 func (g BaseGraphService) getDriveItem(ctx context.Context, ref *storageprovider.Reference) (*libregraph.DriveItem, error) {
@@ -65,7 +66,7 @@ func (g BaseGraphService) getDriveItem(ctx context.Context, ref *storageprovider
 		refStr, _ := storagespace.FormatReference(ref)
 		return nil, fmt.Errorf("could not stat %s: %s", refStr, res.GetStatus().GetMessage())
 	}
-	return cs3ResourceToDriveItem(g.logger, res.GetInfo())
+	return cs3ResourceToDriveItem(g.logger, g.publicBaseURL, res.GetInfo())
 }
 
 func (g BaseGraphService) CS3ReceivedSharesToDriveItems(ctx context.Context, receivedShares []*collaboration.ReceivedShare) ([]libregraph.DriveItem, error) {

@@ -94,7 +94,7 @@ func (g Graph) FollowDriveItem(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	driveItem, err := cs3ResourceToDriveItem(g.logger, statRes.GetInfo())
+	driveItem, err := cs3ResourceToDriveItem(g.logger, g.publicBaseURL, statRes.GetInfo())
 	if err != nil {
 		errorcode.GeneralException.Render(w, r, http.StatusInternalServerError, err.Error())
 		return

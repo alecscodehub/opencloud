@@ -1,5 +1,44 @@
 # Changelog
 
+## [6.2.0](https://github.com/opencloud-eu/opencloud/releases/tag/v6.2.0) - 2026-05-11
+
+### ❤️ Thanks to all contributors! ❤️
+
+@JammingBen, @ScharfViktor, @Sweeistaken, @aduffeck, @dragonchaser, @dschmidt, @fschade, @pedropintosilva, @rhafer, @schweigisito
+
+### 📈 Enhancement
+
+- feat: enable EnableRemoteLinkPicker WOPI flag for Collabora Online [[#2663](https://github.com/opencloud-eu/opencloud/pull/2663)]
+- feat(kql): support dotted keys in property restrictions [[#2632](https://github.com/opencloud-eu/opencloud/pull/2632)]
+
+### 🐛 Bug Fixes
+
+- Set new defaults for caches and stores [[#2702](https://github.com/opencloud-eu/opencloud/pull/2702)]
+- fix: remove typo in error message [[#2701](https://github.com/opencloud-eu/opencloud/pull/2701)]
+- fix(search): preserve value case for non-lowercased bleve fields [[#2633](https://github.com/opencloud-eu/opencloud/pull/2633)]
+- More graceful shutdown fixes [[#2690](https://github.com/opencloud-eu/opencloud/pull/2690)]
+- Hotfix for https://github.com/opencloud-eu/opencloud/issues/2282 [[#2631](https://github.com/opencloud-eu/opencloud/pull/2631)]
+- fix(search): read --force-rescan flag with its registered name [[#2639](https://github.com/opencloud-eu/opencloud/pull/2639)]
+- fix(search): parse tika xmpDM:duration as a float [[#2638](https://github.com/opencloud-eu/opencloud/pull/2638)]
+
+### ✅ Tests
+
+- [api-tests] delete PROPATCH favorite tests [[#2689](https://github.com/opencloud-eu/opencloud/pull/2689)]
+
+### 📚 Documentation
+
+- enhancement: increase display size of graph flow diagram [[#2620](https://github.com/opencloud-eu/opencloud/pull/2620)]
+
+### 📦️ Dependencies
+
+- build(deps): bump go.opentelemetry.io/contrib/zpages from 0.67.0 to 0.68.0 [[#2666](https://github.com/opencloud-eu/opencloud/pull/2666)]
+- build(deps): bump @types/node from 22.19.17 to 25.6.0 in /services/idp [[#2687](https://github.com/opencloud-eu/opencloud/pull/2687)]
+- build(deps): bump go.opentelemetry.io/otel/exporters/stdout/stdouttrace from 1.42.0 to 1.43.0 [[#2601](https://github.com/opencloud-eu/opencloud/pull/2601)]
+- build(deps): bump github.com/davidbyttow/govips/v2 from 2.17.0 to 2.18.0 [[#2656](https://github.com/opencloud-eu/opencloud/pull/2656)]
+- build(deps): bump i18next from 25.10.10 to 26.0.4 in /services/idp [[#2609](https://github.com/opencloud-eu/opencloud/pull/2609)]
+- build(deps): bump github.com/testcontainers/testcontainers-go/modules/opensearch from 0.41.0 to 0.42.0 [[#2645](https://github.com/opencloud-eu/opencloud/pull/2645)]
+- build(deps): bump github.com/open-policy-agent/opa from 1.15.1 to 1.15.2 [[#2602](https://github.com/opencloud-eu/opencloud/pull/2602)]
+
 ## [6.1.0](https://github.com/opencloud-eu/opencloud/releases/tag/v6.1.0) - 2026-04-20
 
 ### ❤️ Thanks to all contributors! ❤️
