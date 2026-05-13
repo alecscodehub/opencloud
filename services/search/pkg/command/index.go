@@ -2,19 +2,20 @@ package command
 
 import (
 	"context"
+	"crypto/tls"
 	"errors"
 	"fmt"
 	"time"
 
 	"github.com/opencloud-eu/opencloud/pkg/config/configlog"
-	"github.com/opencloud-eu/opencloud/pkg/service/grpc"
-	"github.com/opencloud-eu/opencloud/pkg/tracing"
 	searchsvc "github.com/opencloud-eu/opencloud/protogen/gen/opencloud/services/search/v0"
 	"github.com/opencloud-eu/opencloud/services/search/pkg/config"
 	"github.com/opencloud-eu/opencloud/services/search/pkg/config/parser"
 
 	"github.com/spf13/cobra"
-	"go-micro.dev/v4/client"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 // Index is the entrypoint for the server command.
@@ -30,28 +31,35 @@ func Index(cfg *config.Config) *cobra.Command {
 			allSpacesFlag, _ := cmd.Flags().GetBool("all-spaces")
 			spaceFlag, _ := cmd.Flags().GetString("space")
 			forceRescanFlag, _ := cmd.Flags().GetBool("force-rescan")
+			endpoint, _ := cmd.Flags().GetString("endpoint")
 			if spaceFlag == "" && !allSpacesFlag {
 				return errors.New("either --space or --all-spaces is required")
 			}
 
-			traceProvider, err := tracing.GetTraceProvider(cmd.Context(), cfg.Commons.TracesExporter, cfg.Service.Name)
-			if err != nil {
-				return err
-			}
-			grpcClient, err := grpc.NewClient(
-				append(grpc.GetClientOptions(cfg.GRPCClientTLS),
-					grpc.WithTraceProvider(traceProvider),
-				)...,
-			)
-			if err != nil {
-				return err
+			var dialOpts []grpc.DialOption
+			if cfg.GRPCClientTLS.Mode == "insecure" {
+				dialOpts = append(dialOpts, grpc.WithTransportCredentials(insecure.NewCredentials()))
+			} else {
+				dialOpts = append(dialOpts, grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{
+					MinVersion: tls.VersionTLS12,
+				})))
 			}
 
-			c := searchsvc.NewSearchProviderService("eu.opencloud.api.search", grpcClient)
-			_, err = c.IndexSpace(context.Background(), &searchsvc.IndexSpaceRequest{
+			conn, err := grpc.NewClient(endpoint, dialOpts...)
+			if err != nil {
+				return fmt.Errorf("failed to dial %s: %w", endpoint, err)
+			}
+			defer conn.Close()
+
+			c := searchsvc.NewSearchProviderClient(conn)
+
+			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
+			defer cancel()
+
+			_, err = c.IndexSpace(ctx, &searchsvc.IndexSpaceRequest{
 				SpaceId:      spaceFlag,
 				ForceReindex: forceRescanFlag,
-			}, func(opts *client.CallOptions) { opts.RequestTimeout = 10 * time.Minute })
+			})
 			if err != nil {
 				fmt.Println("failed to index space: " + err.Error())
 				return err
@@ -74,6 +82,11 @@ func Index(cfg *config.Config) *cobra.Command {
 		"force-rescan",
 		false,
 		"force a rescan of all files, even if they are already indexed. This will make the indexing process much slower, but ensures that the index is up-to-date using the current search service configuration.",
+	)
+	indexCmd.Flags().String(
+		"endpoint",
+		"127.0.0.1:9220",
+		"the address of the search service gRPC endpoint.",
 	)
 
 	return indexCmd
