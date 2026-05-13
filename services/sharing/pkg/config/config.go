@@ -18,7 +18,8 @@ type Config struct {
 	Reva         *shared.Reva  `yaml:"reva"`
 	Events       Events        `yaml:"events"`
 
-	SkipUserGroupsInToken bool `yaml:"skip_user_groups_in_token" env:"SHARING_SKIP_USER_GROUPS_IN_TOKEN" desc:"Disables the loading of user's group memberships from the reva access token." introductionVersion:"1.0.0"`
+	ServiceAccount        ServiceAccount `yaml:"service_account"`
+	SkipUserGroupsInToken bool           `yaml:"skip_user_groups_in_token" env:"SHARING_SKIP_USER_GROUPS_IN_TOKEN" desc:"Disables the loading of user's group memberships from the reva access token." introductionVersion:"1.0.0"`
 
 	UserSharingDriver              string               `yaml:"user_sharing_driver" env:"SHARING_USER_DRIVER" desc:"Driver to be used to persist shares. Supported values are 'jsoncs3', 'json', 'cs3' (deprecated) and 'owncloudsql'." introductionVersion:"1.0.0"`
 	UserSharingDrivers             UserSharingDrivers   `yaml:"user_sharing_drivers"`
@@ -100,6 +101,13 @@ type UserSharingJSONCS3Driver struct {
 	CacheTTL         int    `yaml:"cache_ttl" env:"SHARING_USER_JSONCS3_CACHE_TTL" desc:"TTL for the internal caches in seconds." introductionVersion:"1.0.0"`
 	MaxConcurrency   int    `yaml:"max_concurrency" env:"OC_MAX_CONCURRENCY;SHARING_USER_JSONCS3_MAX_CONCURRENCY" desc:"Maximum number of concurrent go-routines. Higher values can potentially get work done faster but will also cause more load on the system. Values of 0 or below will be ignored and the default value will be used." introductionVersion:"1.0.0"`
 }
+
+// ServiceAccount is the configuration for the used service account
+type ServiceAccount struct {
+	ServiceAccountID     string `yaml:"service_account_id" env:"OC_SERVICE_ACCOUNT_ID;SHARING_SERVICE_ACCOUNT" desc:"The ID of the service account the service should use. See the 'auth-service' service description for more details." introductionVersion:"%%NEXT%%"`
+	ServiceAccountSecret string `yaml:"service_account_secret" env:"OC_SERVICE_ACCOUNT_SECRET;SHARING_SERVICE_ACCOUNT_SECRET" desc:"The service account secret." introductionVersion:"%%NEXT%%"`
+}
+
 type PublicSharingDrivers struct {
 	JSON    PublicSharingJSONDriver    `yaml:"json"`
 	JSONCS3 PublicSharingJSONCS3Driver `yaml:"jsoncs3"`
