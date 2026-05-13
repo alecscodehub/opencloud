@@ -283,7 +283,7 @@ class CliContext implements Context {
 	 */
 	public function theAdministratorReindexesAllSpacesUsingTheCli(): void {
 		$endpoint = $this->featureContext->getBaseUrlHostName();
-		$command = "search index --all-spaces --endpoint $endpoint:9220";
+		$command = "search index --all-spaces --endpoint $endpoint:9220 --insecure";
 		$body = [
 		  "command" => $command
 		];
@@ -300,7 +300,7 @@ class CliContext implements Context {
 	public function theAdministratorReindexesASpaceUsingTheCli(string $spaceName): void {
 		$spaceId = $this->spacesContext->getSpaceIdByName($this->featureContext->getAdminUsername(), $spaceName);
 		$endpoint = $this->featureContext->getBaseUrlHostName();
-		$command = "search index --space $spaceId --endpoint $endpoint:9220";
+		$command = "search index --space $spaceId --endpoint $endpoint:9220 --insecure";
 		$body = [
 		  "command" => $command
 		];

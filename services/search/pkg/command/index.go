@@ -31,13 +31,14 @@ func Index(cfg *config.Config) *cobra.Command {
 			allSpacesFlag, _ := cmd.Flags().GetBool("all-spaces")
 			spaceFlag, _ := cmd.Flags().GetString("space")
 			forceRescanFlag, _ := cmd.Flags().GetBool("force-rescan")
-			endpoint, _ := cmd.Flags().GetString("endpoint")
+			endpointFlag, _ := cmd.Flags().GetString("endpoint")
+			insecureFlag, _ := cmd.Flags().GetBool("insecure")
 			if spaceFlag == "" && !allSpacesFlag {
 				return errors.New("either --space or --all-spaces is required")
 			}
 
 			var dialOpts []grpc.DialOption
-			if cfg.GRPCClientTLS.Mode == "insecure" {
+			if cfg.GRPCClientTLS.Mode == "insecure" || insecureFlag {
 				dialOpts = append(dialOpts, grpc.WithTransportCredentials(insecure.NewCredentials()))
 			} else {
 				dialOpts = append(dialOpts, grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{
@@ -45,9 +46,9 @@ func Index(cfg *config.Config) *cobra.Command {
 				})))
 			}
 
-			conn, err := grpc.NewClient(endpoint, dialOpts...)
+			conn, err := grpc.NewClient(endpointFlag, dialOpts...)
 			if err != nil {
-				return fmt.Errorf("failed to dial %s: %w", endpoint, err)
+				return fmt.Errorf("failed to dial %s: %w", endpointFlag, err)
 			}
 			defer conn.Close()
 
@@ -87,6 +88,11 @@ func Index(cfg *config.Config) *cobra.Command {
 		"endpoint",
 		"127.0.0.1:9220",
 		"the address of the search service gRPC endpoint.",
+	)
+	indexCmd.Flags().Bool(
+		"insecure",
+		false,
+		"disable TLS for the gRPC connection.",
 	)
 
 	return indexCmd
