@@ -85,12 +85,16 @@ func cleanup(_ *cobra.Command, cfg *config.Config) error {
 		return configlog.ReturnError(errors.New("cleanup is only implemented for the jsoncs3 share manager"))
 	}
 
+	l := logger()
+
+	zerolog.SetGlobalLevel(zerolog.InfoLevel)
+
 	rcfg := revaShareConfig(cfg.Sharing)
 	f, ok := registry.NewFuncs[driver]
 	if !ok {
 		return configlog.ReturnError(errors.New("Unknown share manager type '" + driver + "'"))
 	}
-	mgr, err := f(rcfg[driver].(map[string]any))
+	mgr, err := f(rcfg[driver].(map[string]any), l)
 	if err != nil {
 		return configlog.ReturnError(err)
 	}
@@ -115,10 +119,6 @@ func cleanup(_ *cobra.Command, cfg *config.Config) error {
 	if err != nil {
 		return configlog.ReturnError(err)
 	}
-
-	l := logger()
-
-	zerolog.SetGlobalLevel(zerolog.InfoLevel)
 	serviceUserCtx = l.WithContext(serviceUserCtx)
 
 	mgr.(*jsoncs3.Manager).CleanupStaleShares(serviceUserCtx)

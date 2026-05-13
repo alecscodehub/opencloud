@@ -420,7 +420,7 @@ class SharingNgContext implements Context {
 		$expirationDateTime = (\array_key_exists('expirationDateTime', $rows))
 			? \date(DATE_RFC3339, \strtotime($rows['expirationDateTime'])) : null;
 
-		return GraphHelper::sendSharingInvitationForDrive(
+		$response = GraphHelper::sendSharingInvitationForDrive(
 			$this->featureContext->getBaseUrl(),
 			$this->featureContext->getStepLineRef(),
 			$user,
@@ -432,6 +432,10 @@ class SharingNgContext implements Context {
 			$permissionsAction,
 			$expirationDateTime
 		);
+		if ($response->getStatusCode() === 200) {
+			$this->featureContext->shareNgAddToCreatedUserGroupShares($response);
+		}
+		return $response;
 	}
 
 	/**
@@ -651,13 +655,7 @@ class SharingNgContext implements Context {
 		string $sharee,
 		TableNode $table
 	) {
-		$permissionID = "";
-		if ($shareType === "user") {
-			$permissionID = "u:" . $this->featureContext->getAttributeOfCreatedUser($sharee, 'id');
-		} elseif ($shareType === "group") {
-			$permissionID = "g:" . $this->featureContext->getAttributeOfCreatedGroup($sharee, 'id');
-		}
-
+		$permissionID = $this->featureContext->shareNgGetLastCreatedUserGroupShareID();
 		$this->featureContext->setResponse(
 			$this->updateResourceShare(
 				$user,
@@ -974,7 +972,6 @@ class SharingNgContext implements Context {
 	 * @param string $shareType (user|group|link)
 	 * @param string $space
 	 * @param string|null $resource
-	 * @param string|null $recipient
 	 *
 	 * @return ResponseInterface
 	 * @throws GuzzleException
@@ -984,29 +981,15 @@ class SharingNgContext implements Context {
 		string $sharer,
 		string $shareType,
 		string $space,
-		?string $resource = null,
-		?string $recipient = null
+		?string $resource = null
 	): ResponseInterface {
 		$spaceId = ($this->spacesContext->getSpaceByName($sharer, $space))["id"];
 		$itemId = (isset($resource)) ? $this->spacesContext->getResourceId($sharer, $space, $resource)
 		: $this->spacesContext->getResourceId($sharer, $space, $space);
 
-		$permissionID = "";
-
-		// if resource is not provided then it indicates a space share
-		// and the space shares are not stored
-		// so build the permission-id using the user or group id
-		if ($resource === null) {
-			if ($shareType === "user") {
-				$permissionID = "u:" . $this->featureContext->getAttributeOfCreatedUser($recipient, 'id');
-			} elseif ($shareType === "group") {
-				$permissionID = "g:" . $this->featureContext->getAttributeOfCreatedGroup($recipient, 'id');
-			}
-		} else {
-			$permissionID = ($shareType === 'link')
+		$permissionID = ($shareType === 'link')
 				? $this->featureContext->shareNgGetLastCreatedLinkShareID()
 				: $this->featureContext->shareNgGetLastCreatedUserGroupShareID();
-		}
 
 		return
 			GraphHelper::removeAccessToSpaceItem(
@@ -1040,12 +1023,18 @@ class SharingNgContext implements Context {
 	): ResponseInterface {
 		$spaceId = ($this->spacesContext->getSpaceByName($sharer, $space))["id"];
 
-		$permissionID = match ($shareType) {
-			'link' => $this->featureContext->shareNgGetLastCreatedLinkShareID(),
-			'user' => 'u:' . $this->featureContext->getAttributeOfCreatedUser($recipient, 'id'),
-			'group' => 'g:' . $this->featureContext->getAttributeOfCreatedGroup($recipient, 'id'),
-			default => throw new Exception("shareType '$shareType' does not match user|group|link "),
-		};
+		// if recipient is not provided, it means user tries to remove own access, then we need to get the user permission id
+		if ($shareType == 'user' && !isset($recipient)) {
+			$this->featureContext->shareNgAddToCreatedUserGroupShares($this->getDrivePermissionsList($sharer, $space));
+			$permissionID = $this->featureContext->shareNgGetLastCreatedUserGroupShareID();
+		} else {
+			$permissionID = match ($shareType) {
+				'link' => $this->featureContext->shareNgGetLastCreatedLinkShareID(),
+				'user' => $this->featureContext->shareNgGetLastCreatedUserGroupShareID(),
+				'group' => $this->featureContext->shareNgGetLastCreatedUserGroupShareID(),
+				default => throw new Exception("shareType '$shareType' does not match user|group|link "),
+			};
+		}
 
 		return
 			GraphHelper::removeAccessToSpace(
@@ -1078,7 +1067,7 @@ class SharingNgContext implements Context {
 		string $resource,
 		string $space
 	): void {
-		$response = $this->removeAccessToSpaceItem($sharer, $recipientType, $space, $resource);
+		$response = $this->removeAccessToSpaceItem($sharer, $recipientType, $space, $resource, $recipient);
 		$this->featureContext->theHTTPStatusCodeShouldBe(204, "", $response);
 	}
 
@@ -1193,6 +1182,44 @@ class SharingNgContext implements Context {
 		$this->featureContext->setResponse(
 			$this->removeAccessToSpace($sharer, $recipientType, $space, $recipient)
 		);
+	}
+
+	/**
+	 * @When /^user "([^"]*)" removes own access from space "([^"]*)" using root endpoint of the Graph API$/
+	 * @When /^user "([^"]*)" tries to remove own access from space "([^"]*)" using root endpoint of the Graph API$/
+	 *
+	 * @param string $user
+	 * @param string $space
+	 *
+	 * @return void
+	 * @throws JsonException
+	 * @throws GuzzleException
+	 */
+	public function userRemovesOwnAccessFromSpaceUsingGraphAPI(
+		string $user,
+		string $space
+	): void {
+		$this->featureContext->setResponse(
+			$this->removeAccessToSpace($user, 'user', $space)
+		);
+	}
+
+	/**
+	 * @Given /^user "([^"]*)" has removed own access from space "([^"]*)"$/
+	 *
+	 * @param string $user
+	 * @param string $space
+	 *
+	 * @return void
+	 * @throws JsonException
+	 * @throws GuzzleException
+	 */
+	public function userHasRemovedOwnAccessFromSpace(
+		string $user,
+		string $space
+	): void {
+		$response = $this->removeAccessToSpace($user, 'user', $space);
+		$this->featureContext->theHTTPStatusCodeShouldBe(204, "", $response);
 	}
 
 	/**
@@ -1650,11 +1677,7 @@ class SharingNgContext implements Context {
 		TableNode $table
 	): void {
 		$bodyRows = $table->getRowsHash();
-		$permissionID = match ($bodyRows['shareType']) {
-			'user' => 'u:' . $this->featureContext->getAttributeOfCreatedUser($bodyRows['sharee'], 'id'),
-			'group' => 'g:' . $this->featureContext->getAttributeOfCreatedGroup($bodyRows['sharee'], 'id'),
-			default => throw new Exception("shareType {$bodyRows['shareType']} does not match user|group "),
-		};
+		$permissionID = $this->featureContext->shareNgGetLastCreatedUserGroupShareID();
 		$space = $bodyRows['space'];
 		$spaceId = ($this->spacesContext->getSpaceByName($user, $space))["id"];
 		$body = [];

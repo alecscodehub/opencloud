@@ -272,6 +272,9 @@ func CreateConfig(insecure, forceOverwrite, diff bool, configPath, adminPassword
 		Activitylog: Activitylog{
 			ServiceAccount: serviceAccount,
 		},
+		Sharing: Sharing{
+			ServiceAccount: serviceAccount,
+		},
 	}
 
 	if insecure {
