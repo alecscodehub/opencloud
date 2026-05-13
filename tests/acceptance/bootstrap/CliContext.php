@@ -282,7 +282,8 @@ class CliContext implements Context {
 	 * @return void
 	 */
 	public function theAdministratorReindexesAllSpacesUsingTheCli(): void {
-		$command = "search index --all-spaces";
+		$endpoint = $this->featureContext->getBaseUrlHostName();
+		$command = "search index --all-spaces --endpoint $endpoint:9220";
 		$body = [
 		  "command" => $command
 		];
@@ -298,7 +299,8 @@ class CliContext implements Context {
 	 */
 	public function theAdministratorReindexesASpaceUsingTheCli(string $spaceName): void {
 		$spaceId = $this->spacesContext->getSpaceIdByName($this->featureContext->getAdminUsername(), $spaceName);
-		$command = "search index --space $spaceId";
+		$endpoint = $this->featureContext->getBaseUrlHostName();
+		$command = "search index --space $spaceId --endpoint $endpoint:9220";
 		$body = [
 		  "command" => $command
 		];
@@ -334,11 +336,12 @@ class CliContext implements Context {
 
 		$jsonResponse = $this->featureContext->getJsonDecodedResponse($response);
 
-		Assert::assertSame("OK", $jsonResponse["status"]);
+		Assert::assertSame("OK", $jsonResponse["status"], $jsonResponse["message"]);
 		Assert::assertSame(
 			0,
 			$jsonResponse["exitCode"],
 			"Expected exit code to be 0, but got " . $jsonResponse["exitCode"]
+			. ". Message: " . $jsonResponse["message"]
 		);
 	}
 
