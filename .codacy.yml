@@ -12,8 +12,7 @@ exclude_paths:
   - 'scripts/**'
   - 'idp/ui_config/**'
   - 'idp/scripts/**'
-  - 'settings/rollup.config.js'
-  - 'accounts/rollup.config.js'
+  - 'idp/src/**'
   - 'devtools/**'
   - 'deployments/**'
   - 'tests/acceptance/expected-failures-*.md'
@@ -23,4 +22,8 @@ exclude_paths:
   - 'vendor/**/*'
   - 'vendor-bin/**'
   - 'tests/ocwrapper/vendor/**'
+  - '**/mocks/**'
+  - '**/pkg/config/**'
+  - '**/pkg/metrics/**'
+  - '**/pkg/revaconfig/**'
 ...
