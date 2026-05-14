@@ -10,6 +10,7 @@ docker_repo_slug = "opencloudeu/opencloud"
 ALPINE_GIT = "alpine/git:latest"
 APACHE_TIKA = "apache/tika:3.2.3.0-full"
 CHKO_DOCKER_PUSHRM = "chko/docker-pushrm:1"
+CODACY_COVERAGE_REPORTER = "codacy/codacy-coverage-reporter:14.1.3"
 COLLABORA_CODE = "collabora/code:24.04.5.1.1"
 OPEN_SEARCH = "opensearchproject/opensearch:2"
 INBUCKET_INBUCKET = "inbucket/inbucket"
@@ -776,7 +777,8 @@ def restoreGoBinCache():
     ]
 
 def testOpencloud(ctx):
-    steps = skipCheckStep(ctx, "unit-tests") + evaluateWorkflowStep() + restoreGoBinCache() + makeGoGenerate("") + [
+    #steps = skipCheckStep(ctx, "unit-tests") + evaluateWorkflowStep() + restoreGoBinCache() + makeGoGenerate("") + [
+    steps = evaluateWorkflowStep() + restoreGoBinCache() + makeGoGenerate("") + [
         {
             "name": "golangci-lint",
             "image": OC_CI_GOLANG,
@@ -818,27 +820,24 @@ def testOpencloud(ctx):
                 "SEARCH_ENGINE_OPEN_SEARCH_CLIENT_ADDRESSES": "http://open-search:9200",
             },
             "commands": [
-                "mkdir -p cache/coverage",
                 "make test",
-                "mv coverage.out cache/coverage/",
+                "mv coverage.out unit.coverage.out",
             ],
         },
         {
-            "name": "scan-result-cache",
-            "image": PLUGINS_S3,
-            "settings": {
-                "endpoint": CACHE_S3_SERVER,
-                "bucket": "cache",
-                "source": "cache/**/*",
-                "target": "%s/%s" % (repo_slug, ctx.build.commit + "-${CI_PIPELINE_NUMBER}"),
-                "path_style": True,
-                "access_key": {
-                    "from_secret": "cache_s3_access_key",
+            "name": "codacy-coverage",
+            "image": CODACY_COVERAGE_REPORTER,
+            "environment": {
+                "CODACY_API_TOKEN": {
+                    "from_secret": "codacy_api_token",
                 },
-                "secret_key": {
-                    "from_secret": "cache_s3_secret_key",
-                },
+                "CODACY_ORGANIZATION_PROVIDER": "gh",
+                "CODACY_USERNAME": "opencloud-eu",
+                "CODACY_PROJECT_NAME": "opencloud",
             },
+            "commands": [
+                "/app/codacy-coverage-reporter report --force-coverage-parser go -r unit.coverage.out",
+            ],
         },
     ]
 
