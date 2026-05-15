@@ -84,6 +84,23 @@ func Local(cfg *config.Config) map[string]any {
 	}
 }
 
+// External is the config mapping for protected external datasources.
+func External(cfg *config.Config) map[string]any {
+	return map[string]any{
+		"mount_id":    cfg.MountID,
+		"datasources": cfg.ExternalDatasources,
+	}
+}
+
+// PosixExternal keeps the normal POSIX user storage and adds external
+// datasource spaces in the same storage-users process.
+func PosixExternal(cfg *config.Config, enableFSScan, enableFSWatch bool) map[string]any {
+	return map[string]any{
+		"posix":    Posix(cfg, enableFSScan, enableFSWatch),
+		"external": External(cfg),
+	}
+}
+
 // Posix is the config mapping for the Posix storage driver
 func Posix(cfg *config.Config, enableFSScan, enableFSWatch bool) map[string]any {
 	return map[string]any{

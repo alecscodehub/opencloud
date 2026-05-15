@@ -25,6 +25,183 @@ To authenticate CLI commands use:
 
 The `storage-users` CLI tool uses the default address to establish the connection to the `gateway` service. If the connection fails, check your custom `gateway` service `GATEWAY_GRPC_ADDR` configuration and set the same address in `storage-users` `OC_GATEWAY_GRPC_ADDR` or `STORAGE_USERS_GATEWAY_GRPC_ADDR`.
 
+## External Datasources
+
+External datasources expose existing POSIX folders in OpenCloud without
+adopting ownership of those folders. This is intended for NAS, media-library and
+archive use cases where the mounted folder is the source of truth and
+OpenCloud must be able to rebuild its view from the filesystem.
+
+The feature provides:
+
+*   Multiple datasource roots mounted into one OpenCloud deployment.
+*   Explicit ingestion of a datasource root or selected first-level folders.
+*   Project spaces for browsing, listing, stat, download and, when the mounted
+    filesystem allows it, file/folder writes.
+*   Stable space IDs derived from datasource ID and adopted folder name.
+*   No OpenCloud metadata, cache, upload, trash-bin, revision or thumbnail data
+    written into the datasource tree.
+*   Rejection of OpenCloud-only metadata features such as trash-bin, revisions,
+    grants, locks, labels and arbitrary metadata writes for external resources.
+*   Path traversal and symlink checks so requests cannot escape an adopted
+    folder.
+
+The source folder remains authoritative. If the OpenCloud config or metadata
+layer is lost, the external spaces can be rebuilt by restoring the datasource
+configuration and rescanning the same source folders.
+
+### Driver Modes
+
+Use `posix_external` when normal OpenCloud user storage and external datasource
+spaces should run in the same `storage-users` process. This is the expected mode
+for a single-container Docker deployment.
+
+Use `external` only for a standalone storage provider that serves external
+datasource spaces and no normal user storage.
+
+```yaml
+environment:
+  - STORAGE_USERS_DRIVER=posix_external
+  - STORAGE_USERS_EXTERNAL_DATASOURCES_CONFIG=/etc/opencloud/external-datasources.json
+```
+
+### Datasource Configuration
+
+Point `STORAGE_USERS_EXTERNAL_DATASOURCES_CONFIG` to a JSON file outside every
+datasource root. Do not store this file, caches, thumbnails, upload sessions,
+trash-bin data or other OpenCloud metadata inside a datasource root.
+
+The JSON file can be either a list of datasources or an object with a
+`datasources` list.
+
+List form:
+
+```json
+[
+  {
+    "id": "media",
+    "root": "/srv/media",
+    "mount_name": "Media",
+    "adopt": ["Photos", "Videos"],
+    "owner_idp": "https://cloud.opencloud.test",
+    "owner_id": "admin-user-id",
+    "read_only": false,
+    "allow_deletes": false
+  },
+  {
+    "id": "archive",
+    "root": "/mnt/archive",
+    "mount_name": "Archive",
+    "adopt": ["2024-*"]
+  }
+]
+```
+
+Object form:
+
+```json
+{
+  "datasources": [
+    {
+      "id": "media",
+      "root": "/srv/media",
+      "mount_name": "Media",
+      "adopt": ["Photos", "Videos"]
+    }
+  ]
+}
+```
+
+Fields:
+
+*   `id`: Stable datasource identifier. Changing it changes derived external
+    space IDs.
+*   `root`: Absolute path inside the OpenCloud container where the datasource is
+    mounted.
+*   `mount_name`: Optional display prefix for adopted spaces.
+*   `adopt`: Required allowlist of first-level folder names or filepath match
+    patterns. Only matching first-level folders become spaces. Use `"."` to
+    expose the datasource root itself as one space.
+*   `owner_idp` and `owner_id`: Optional owner identity for the exposed spaces.
+*   `read_only`: Optional software-level read-only flag. Defaults to `false`.
+    Docker or host read-only mounts are still the strongest enforcement layer.
+*   `allow_deletes`: Optional destructive-operation flag. Defaults to `false`.
+    When enabled, delete and same-space rename/move operations remove or move
+    files in the datasource tree without an OpenCloud trash-bin fallback. Keep
+    it disabled for ingest/browse workflows.
+
+### Safety Contract
+
+External datasource folders are protected by design:
+
+*   External resources report write permissions only when the datasource is not
+    configured as `read_only`.
+*   Create, empty-file touch and upload write directly to the datasource tree
+    when the datasource and mounted filesystem are writable.
+*   Delete and same-space move are blocked unless `allow_deletes` is explicitly
+    enabled.
+*   OpenCloud never creates metadata files, sidecar files, trash folders or
+    upload sessions inside the datasource root.
+*   Trash-bin, versions, grants, labels, locks and arbitrary metadata are not
+    stored in the datasource root.
+*   Overlapping datasource roots are rejected at startup.
+*   Symlinks that resolve outside the adopted folder are rejected.
+*   Relative paths such as `..` that would leave the adopted folder are rejected.
+
+The datasource root can also be mounted read-only at the Docker or host level.
+If the mount is read-only, write attempts fail at the operating-system layer
+even when `read_only` is not set in the datasource config.
+
+### Docker Compose Example
+
+```yaml
+services:
+  opencloud:
+    image: opencloudeu/opencloud-rolling:6.1.0
+    environment:
+      - STORAGE_USERS_DRIVER=posix_external
+      - STORAGE_USERS_EXTERNAL_DATASOURCES_CONFIG=/etc/opencloud/external-datasources.json
+    volumes:
+      - /volume1/NASAPPS/OpenCloud/config:/etc/opencloud
+      - /volume3/SGREEN/OPENCLOUD/data:/var/lib/opencloud
+      - /volume1/UGSeagate/Media/music:/external/music
+      - /volume1/UGSeagate/Media/movies:/external/movies
+```
+
+With those mounts, `/etc/opencloud/external-datasources.json` can contain:
+
+```json
+[
+  {
+    "id": "music",
+    "root": "/external/music",
+    "mount_name": "Music",
+    "adopt": ["."]
+  },
+  {
+    "id": "movies",
+    "root": "/external/movies",
+    "mount_name": "Movies",
+    "adopt": ["."]
+  }
+]
+```
+
+Do not mount multiple host folders to `/`. Each external datasource needs its
+own container path. Add `:ro` to a datasource volume when that datasource should
+be read-only.
+
+### Current Limits
+
+External datasource spaces do not store OpenCloud metadata in the source folder.
+That means writable shares, trash-bin integration, versions, labels, locks and
+arbitrary metadata editing are not supported for external resources yet. File
+creation and upload can write through to the datasource when the datasource
+configuration and mounted filesystem allow it. External datasource uploads
+currently target the simple WebDAV upload path; resumable TUS uploads for
+external spaces require a future upload-session store outside the datasource
+tree.
+
 ### Manage Unfinished Uploads
 
 <!-- referencing: [oCIS FS] clean up aborted uploads https://github.com/owncloud/ocis/issues/2622 -->

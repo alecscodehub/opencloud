@@ -14,6 +14,7 @@ import (
 	"github.com/opencloud-eu/opencloud/services/storage-users/pkg/config"
 	"github.com/opencloud-eu/opencloud/services/storage-users/pkg/config/parser"
 	"github.com/opencloud-eu/opencloud/services/storage-users/pkg/event"
+	_ "github.com/opencloud-eu/opencloud/services/storage-users/pkg/externalfs"
 	"github.com/opencloud-eu/opencloud/services/storage-users/pkg/revaconfig"
 	"github.com/opencloud-eu/opencloud/services/storage-users/pkg/server/debug"
 	"github.com/opencloud-eu/reva/v2/cmd/revad/runtime"

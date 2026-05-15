@@ -23,10 +23,12 @@ type Config struct {
 	SkipUserGroupsInToken   bool `yaml:"skip_user_groups_in_token" env:"STORAGE_USERS_SKIP_USER_GROUPS_IN_TOKEN" desc:"Disables the loading of user's group memberships from the reva access token." introductionVersion:"1.0.0"`
 	GracefulShutdownTimeout int  `yaml:"graceful_shutdown_timeout" env:"STORAGE_USERS_GRACEFUL_SHUTDOWN_TIMEOUT" desc:"The number of seconds to wait for the 'storage-users' service to shutdown cleanly before exiting with an error that gets logged. Note: This setting is only applicable when running the 'storage-users' service as a standalone service. See the text description for more details." introductionVersion:"1.0.0"`
 
-	Driver         string  `yaml:"driver" env:"STORAGE_USERS_DRIVER" desc:"The storage driver which should be used by the service. Defaults to 'posix'. Supported values are: 'posix', 'decomposed', 'decomposeds3' and 'owncloudsql'. For backwards compatibility reasons it's also possible to use the 'ocis' and 's3ng' driver and configure them using the 'decomposed'/'decomposeds3' options. The 'posix' driver stores data directly on a POSIX-compliant filesystem. The 'decomposed' driver stores all data (blob and meta data) in a POSIX compliant volume. The 'decomposeds3' driver stores metadata in a POSIX compliant volume and uploads blobs to the s3 bucket." introductionVersion:"1.0.0"`
-	Drivers        Drivers `yaml:"drivers"`
-	DataServerURL  string  `yaml:"data_server_url" env:"STORAGE_USERS_DATA_SERVER_URL" desc:"URL of the data server, needs to be reachable by the data gateway provided by the frontend service or the user if directly exposed." introductionVersion:"1.0.0"`
-	DataGatewayURL string  `yaml:"data_gateway_url" env:"STORAGE_USERS_DATA_GATEWAY_URL" desc:"URL of the data gateway server" introductionVersion:"1.0.0"`
+	Driver                    string               `yaml:"driver" env:"STORAGE_USERS_DRIVER" desc:"The storage driver which should be used by the service. Defaults to 'posix'. Supported values are: 'posix', 'posix_external', 'external', 'decomposed', 'decomposeds3' and 'owncloudsql'. For backwards compatibility reasons it's also possible to use the 'ocis' and 's3ng' driver and configure them using the 'decomposed'/'decomposeds3' options. The 'posix' driver stores data directly on a POSIX-compliant filesystem. The 'posix_external' driver keeps normal POSIX storage and adds external datasource spaces. The 'external' driver exposes existing POSIX folders as project spaces without writing OpenCloud metadata into the source folders. The 'decomposed' driver stores all data (blob and meta data) in a POSIX compliant volume. The 'decomposeds3' driver stores metadata in a POSIX compliant volume and uploads blobs to the s3 bucket." introductionVersion:"1.0.0"`
+	Drivers                   Drivers              `yaml:"drivers"`
+	ExternalDatasourcesConfig string               `yaml:"external_datasources_config" env:"STORAGE_USERS_EXTERNAL_DATASOURCES_CONFIG" desc:"Path to a JSON file containing external datasource definitions. The file is OpenCloud metadata and must not be stored inside a datasource root." introductionVersion:"%%NEXT_PRODUCTION_VERSION%%"`
+	ExternalDatasources       []ExternalDatasource `yaml:"external_datasources" desc:"External POSIX datasource roots to expose as project spaces without storing OpenCloud metadata in the datasource roots. This setting can only be configured in the configuration file or via STORAGE_USERS_EXTERNAL_DATASOURCES_CONFIG." introductionVersion:"%%NEXT_PRODUCTION_VERSION%%"`
+	DataServerURL             string               `yaml:"data_server_url" env:"STORAGE_USERS_DATA_SERVER_URL" desc:"URL of the data server, needs to be reachable by the data gateway provided by the frontend service or the user if directly exposed." introductionVersion:"1.0.0"`
+	DataGatewayURL            string               `yaml:"data_gateway_url" env:"STORAGE_USERS_DATA_GATEWAY_URL" desc:"URL of the data gateway server" introductionVersion:"1.0.0"`
 
 	TransferExpires   int64             `yaml:"transfer_expires" env:"STORAGE_USERS_TRANSFER_EXPIRES" desc:"The time after which the token for upload postprocessing expires" introductionVersion:"1.0.0"`
 	Events            Events            `yaml:"events"`
@@ -96,6 +98,19 @@ type Drivers struct {
 
 	EOS   EOSDriver   `yaml:",omitempty"` // not supported by the OpenCloud product, therefore not part of docs
 	Local LocalDriver `yaml:",omitempty"` // not supported by the OpenCloud product, therefore not part of docs
+}
+
+// ExternalDatasource configures a POSIX folder tree that OpenCloud may index
+// and expose without writing OpenCloud metadata into the source tree.
+type ExternalDatasource struct {
+	ID           string   `yaml:"id" json:"id" mapstructure:"id"`
+	Root         string   `yaml:"root" json:"root" mapstructure:"root"`
+	MountName    string   `yaml:"mount_name" json:"mount_name" mapstructure:"mount_name"`
+	Adopt        []string `yaml:"adopt" json:"adopt" mapstructure:"adopt"`
+	OwnerIDP     string   `yaml:"owner_idp" json:"owner_idp" mapstructure:"owner_idp"`
+	OwnerID      string   `yaml:"owner_id" json:"owner_id" mapstructure:"owner_id"`
+	ReadOnly     bool     `yaml:"read_only" json:"read_only" mapstructure:"read_only"`
+	AllowDeletes bool     `yaml:"allow_deletes" json:"allow_deletes" mapstructure:"allow_deletes"`
 }
 
 // AsyncPropagatorOptions configures the async propagator

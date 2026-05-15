@@ -1,8 +1,10 @@
 package parser
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
+	"os"
 
 	occfg "github.com/opencloud-eu/opencloud/pkg/config"
 	defaults2 "github.com/opencloud-eu/opencloud/pkg/config/defaults"
@@ -31,6 +33,22 @@ func ParseConfig(cfg *config.Config) error {
 	}
 
 	defaults.Sanitize(cfg)
+
+	if cfg.ExternalDatasourcesConfig != "" {
+		data, err := os.ReadFile(cfg.ExternalDatasourcesConfig)
+		if err != nil {
+			return err
+		}
+		if err := json.Unmarshal(data, &cfg.ExternalDatasources); err != nil {
+			var wrapper struct {
+				Datasources []config.ExternalDatasource `json:"datasources"`
+			}
+			if wrapperErr := json.Unmarshal(data, &wrapper); wrapperErr != nil {
+				return err
+			}
+			cfg.ExternalDatasources = wrapper.Datasources
+		}
+	}
 
 	return Validate(cfg)
 }
