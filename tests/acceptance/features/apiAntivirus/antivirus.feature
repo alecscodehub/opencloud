@@ -1,7 +1,6 @@
 @antivirus @skipOnReva
 Feature: antivirus
-  As a system administrator and user
-  I want to protect myself and others from known viruses
+  As a system administrator and user I want to protect myself and others from known viruses
   So that I can prevent files with viruses from being uploaded
 
   Background:
